@@ -3,12 +3,23 @@ spring:
     auto: true
     proxy-target-class: true
   datasource:
-    url: jdbc:mysql://localhost:3306/gree-scanning
-    username: root
-    password: 980524
-    driver-class-name: com.mysql.jdbc.Driver
-    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:h2:mem:soa_service_api
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    schema: classpath:test.sql
+    data: classpath:data.sql
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        trace: true
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: indi.a9043.gree_scanning.pojo
+
+logging:
+  level:
+    indi.a9043.gree_scanning.mapper: trace

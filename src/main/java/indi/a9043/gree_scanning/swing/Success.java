@@ -23,7 +23,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class Success {
-    private final String[] colNames = {"单据号", "产品条码", "日期", "选择"};
+    private final String[] colNamesAdm = {"单据号", "产品条码", "日期", "选择"};
+    private final String[] colNamesNor = {"单据号", "产品条码", "日期"};
     private String nowDateStr;
     private DataService dataService;
     private JPanel success;
@@ -66,7 +67,13 @@ public class Success {
                 }
             }
         });
-        selectButton.addActionListener(e -> selectData());
+        selectButton.addActionListener(e -> {
+            if ((greeUser.getUsrPower() & 1) == 1) {
+                selectData();
+            } else {
+                JOptionPane.showMessageDialog(success, "你没有查询权限! ", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
         startDate.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -120,6 +127,12 @@ public class Success {
 
     void show(GreeUser greeUser) {
         this.greeUser = greeUser;
+        if ((greeUser.getUsrPower() & 4) != 4) {
+            deleteButton.setVisible(false);
+        }
+        if ((greeUser.getUsrPower() & 2) != 2) {
+            insertButton.setVisible(false);
+        }
         JFrame frame = new JFrame("Success");
         int windowWidth = frame.getWidth();
         int windowHeight = frame.getHeight();
@@ -133,11 +146,6 @@ public class Success {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
-    }
-
-    private void createUIComponents() {
-        Object[][] rows = {};
-        table1 = new JTable(rows, colNames);
     }
 
     public void setData(SearchData data) {
@@ -189,14 +197,26 @@ public class Success {
                 .map(edt -> LocalDate.of(edt.get(0), edt.get(1), edt.get(2)))
                 .orElse(null);
         List<GreeScanning> greeScanningList = dataService.selectGreeScanning(searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
-        Object[][] rows = new Object[greeScanningList.size()][4];
-        int idx = 0;
-        for (GreeScanning greeScanning : greeScanningList) {
-            rows[idx][0] = greeScanning.getVoucher().toString();
-            rows[idx][1] = greeScanning.getBarcode();
-            rows[idx][2] = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.ofInstant(greeScanning.getDateTime().toInstant(), ZoneId.systemDefault()));
-            rows[idx][3] = Boolean.FALSE;
-            idx++;
+        Object[][] rows;
+        if ((greeUser.getUsrPower() & 4) == 4) {
+            rows = new Object[greeScanningList.size()][4];
+            int idx = 0;
+            for (GreeScanning greeScanning : greeScanningList) {
+                rows[idx][0] = greeScanning.getVoucher().toString();
+                rows[idx][1] = greeScanning.getBarcode();
+                rows[idx][2] = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.ofInstant(greeScanning.getDateTime().toInstant(), ZoneId.systemDefault()));
+                rows[idx][3] = Boolean.FALSE;
+                idx++;
+            }
+        } else {
+            rows = new Object[greeScanningList.size()][3];
+            int idx = 0;
+            for (GreeScanning greeScanning : greeScanningList) {
+                rows[idx][0] = greeScanning.getVoucher().toString();
+                rows[idx][1] = greeScanning.getBarcode();
+                rows[idx][2] = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.ofInstant(greeScanning.getDateTime().toInstant(), ZoneId.systemDefault()));
+                idx++;
+            }
         }
         GreeTableModel tableModel = new GreeTableModel(rows);
         table1.setModel(tableModel);
@@ -223,7 +243,10 @@ public class Success {
 
         @Override
         public int getColumnCount() {
-            return colNames.length;
+            if ((greeUser.getUsrPower() & 4) == 4) {
+                return colNamesAdm.length;
+            }
+            return colNamesNor.length;
         }
 
         @Override
@@ -233,7 +256,10 @@ public class Success {
 
         @Override
         public String getColumnName(int column) {
-            return colNames[column];
+            if ((greeUser.getUsrPower() & 4) == 4) {
+                return colNamesAdm[column];
+            }
+            return colNamesNor[column];
         }
 
         @Override

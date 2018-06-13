@@ -37,7 +37,7 @@ public class DataService {
 
         Optional.ofNullable(endDate)
                 .map(Date::valueOf)
-                .map(criteria::andDateTimeGreaterThanOrEqualTo);
+                .map(criteria::andDateTimeLessThanOrEqualTo);
 
         return greeScanningMapper.selectByExample(greeScanningExample);
     }
