@@ -1,6 +1,7 @@
 package indi.a9043.gree_scanning.swing;
 
 import indi.a9043.gree_scanning.pojo.GreeScanning;
+import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.DataService;
 import indi.a9043.gree_scanning.swing.pojo.SearchData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ public class Success {
     private JButton selectButton;
     private JButton deleteButton;
     private SearchData searchData;
+    private GreeUser greeUser;
 
     @Autowired
     public Success(DataService dataService) {
@@ -116,7 +118,8 @@ public class Success {
         });
     }
 
-    void show() {
+    void show(GreeUser greeUser) {
+        this.greeUser = greeUser;
         JFrame frame = new JFrame("Success");
         int windowWidth = frame.getWidth();
         int windowHeight = frame.getHeight();

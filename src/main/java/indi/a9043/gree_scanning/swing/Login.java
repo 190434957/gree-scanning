@@ -26,19 +26,32 @@ public class Login {
             GreeUser greeUser = new GreeUser();
             getData(greeUser);
             GreeUser standardGreeUser = loginService.doLogin(greeUser);
-            if(standardGreeUser == null) {
+            if (standardGreeUser == null) {
                 JOptionPane.showMessageDialog(login, "用户名或密码错误! ", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            success.show();
+            success.show(standardGreeUser);
             jFrame.setVisible(false);
         });
         this.loginService = loginService;
         this.success = success;
+        textField1.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == '\n' || e.getKeyChar() == '\r') {
+                    if (passwordField1.getPassword() != null && !String.valueOf(passwordField1.getPassword()).equals("")) {
+                        loginButton.doClick();
+                    } else {
+                        JOptionPane.showMessageDialog(login, "密码不能为空! ", "Warn", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+                super.keyTyped(e);
+            }
+        });
         loginButton.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
-                if(e.getKeyChar() == '\n' || e.getKeyChar() == '\r') {
+                if (e.getKeyChar() == '\n' || e.getKeyChar() == '\r') {
                     loginButton.doClick();
                 }
                 super.keyTyped(e);
@@ -47,7 +60,7 @@ public class Login {
         passwordField1.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
-                if(e.getKeyChar() == '\n' || e.getKeyChar() == '\r') {
+                if (e.getKeyChar() == '\n' || e.getKeyChar() == '\r') {
                     loginButton.doClick();
                 }
                 super.keyTyped(e);
@@ -63,7 +76,7 @@ public class Login {
         Dimension screenSize = kit.getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
-        jFrame.setLocation(screenWidth/2-windowWidth/2, screenHeight/2-windowHeight/2);
+        jFrame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
         jFrame.setContentPane(login);
         jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         jFrame.setResizable(false);
