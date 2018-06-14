@@ -97,8 +97,14 @@ public class View {
                     voucherList.add(table1.getModel().getValueAt(i, 0).toString());
                 }
             }
-            dataService.deleteGreeScanning(voucherList);
-            selectData();
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("以下单据\n");
+            voucherList.forEach(voucher -> stringBuilder.append(voucher).append("\n"));
+            stringBuilder.append("确定删除？");
+            if (JOptionPane.showConfirmDialog(viewPanel, stringBuilder.toString()) == JOptionPane.YES_OPTION) {
+                dataService.deleteGreeScanning(voucherList);
+                selectData();
+            }
         });
     }
 
