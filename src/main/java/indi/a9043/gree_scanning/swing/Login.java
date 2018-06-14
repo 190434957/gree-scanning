@@ -12,8 +12,6 @@ import java.awt.event.KeyEvent;
 
 @Component
 public class Login {
-    private LoginService loginService;
-    private Success success;
     private JFrame jFrame;
     private JPanel login;
     private JTextField textField1;
@@ -21,7 +19,7 @@ public class Login {
     private JButton loginButton;
 
     @Autowired
-    public Login(LoginService loginService, Success success) {
+    public Login(LoginService loginService, Main main) {
         loginButton.addActionListener(e -> {
             GreeUser greeUser = new GreeUser();
             getData(greeUser);
@@ -30,11 +28,14 @@ public class Login {
                 JOptionPane.showMessageDialog(login, "用户名或密码错误! ", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            success.show(standardGreeUser);
+            Byte power = standardGreeUser.getUsrPower();
+            if ((power & 1) != 1 && (power & 2) != 2 && (power & 4) != 4) {
+                JOptionPane.showMessageDialog(login, "用户没有权限! ", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            main.show(standardGreeUser);
             jFrame.setVisible(false);
         });
-        this.loginService = loginService;
-        this.success = success;
         textField1.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {

@@ -253,4 +253,23 @@
       date_time = #{dateTime,jdbcType=TIMESTAMP}
     where voucher = #{voucher,jdbcType=INTEGER}
   </update>
+
+  <select id="selectGreeScanningList" resultType="java.util.Map">
+    SELECT voucher
+    FROM gree_scanning
+    <where>
+      <if test="greeScanningList != null">
+        voucher IN
+        <foreach collection="greeScanningList" item="greeScanning" open="(" close=")" separator=",">
+          #{greeScanning.voucher}
+        </foreach>
+      </if>
+    </where>
+  </select>
+  <insert id="insertGreeScanningList">
+    INSERT INTO gree_scanning (voucher, barcode, date_time) VALUES
+    <foreach collection="greeScanningList" item="greeScanning" open="" close="" separator=",">
+      (#{greeScanning.voucher}, #{greeScanning.barcode}, #{greeScanning.dateTime})
+    </foreach>
+  </insert>
 </mapper>

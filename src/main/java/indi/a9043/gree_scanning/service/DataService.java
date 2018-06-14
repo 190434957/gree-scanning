@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,6 +43,31 @@ public class DataService {
 
     public Integer addNewData(GreeScanning greeScanning) {
         return greeScanningMapper.insert(greeScanning);
+    }
+
+    public int[] addNewData(List<GreeScanning> greeScanningList) {
+        List<Integer> voucherList = greeScanningMapper
+                .selectGreeScanningList(greeScanningList)
+                .stream()
+                .map(map -> {
+                    if(map.get("VOUCHER") != null) {
+                        return Integer.valueOf(map.get("VOUCHER").toString());
+                    }
+                    if(map.get("voucher") != null) {
+                        return Integer.valueOf(map.get("voucher").toString());
+                    }
+                    return -1;
+                })
+                .collect(Collectors.toList());
+
+        List<GreeScanning> insertGreeScanningList = greeScanningList.stream()
+                .filter(greeScanning -> !voucherList.contains(greeScanning.getVoucher()))
+                .collect(Collectors.toList());
+        if (insertGreeScanningList.size() > 0) {
+            return new int[]{voucherList.size(), greeScanningMapper.insertGreeScanningList(insertGreeScanningList)};
+        } else {
+            return new int[]{voucherList.size(), 0};
+        }
     }
 
     public List<String> deleteGreeScanning(List<String> voucherList) {

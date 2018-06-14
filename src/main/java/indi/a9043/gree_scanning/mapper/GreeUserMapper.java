@@ -1,13 +1,10 @@
 package indi.a9043.gree_scanning.mapper;
 
-import indi.a9043.gree_scanning.pojo.GreeUserExample;
 import indi.a9043.gree_scanning.pojo.GreeUser;
+import indi.a9043.gree_scanning.pojo.GreeUserExample;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
 
 public interface GreeUserMapper {
 

@@ -1,6 +1,6 @@
 INSERT INTO
 gree_user (usr_id, usr_name, usr_power, usr_pwd) VALUES
-('root', 'admin', 2, '4QrcOUm6Wau+VuBX8g+IPg==');
+('root', 'admin', 7, '4QrcOUm6Wau+VuBX8g+IPg==');
 
 INSERT INTO
 gree_scanning (voucher, barcode, date_time) VALUES

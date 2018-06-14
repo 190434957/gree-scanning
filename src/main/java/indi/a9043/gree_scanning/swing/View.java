@@ -3,13 +3,12 @@ package indi.a9043.gree_scanning.swing;
 import indi.a9043.gree_scanning.pojo.GreeScanning;
 import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.DataService;
+import indi.a9043.gree_scanning.swing.pojo.GreeTableModel;
 import indi.a9043.gree_scanning.swing.pojo.SearchData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,14 +21,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class Success {
-    private final String[] colNamesAdm = {"单据号", "产品条码", "日期", "选择"};
-    private final String[] colNamesNor = {"单据号", "产品条码", "日期"};
+public class View {
     private String nowDateStr;
     private DataService dataService;
-    private JPanel success;
-    private JButton insertButton;
-    private JButton searchButton;
+    private JPanel viewPanel;
     private JTextField endDate;
     private JTextField startDate;
     private JTextField voucher;
@@ -41,7 +36,7 @@ public class Success {
     private GreeUser greeUser;
 
     @Autowired
-    public Success(DataService dataService) {
+    public View(DataService dataService) {
         this.dataService = dataService;
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -68,10 +63,10 @@ public class Success {
             }
         });
         selectButton.addActionListener(e -> {
-            if ((greeUser.getUsrPower() & 1) == 1) {
+            if ((greeUser.getUsrPower() & 1) == 1 || (greeUser.getUsrPower() & 4) == 4) {
                 selectData();
             } else {
-                JOptionPane.showMessageDialog(success, "你没有查询权限! ", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(viewPanel, "你没有查询权限! ", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
         startDate.addMouseListener(new MouseAdapter() {
@@ -84,15 +79,6 @@ public class Success {
                 super.mouseClicked(e);
             }
         });
-        startDate.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (startDate.getText().equals("")) {
-                    startDate.setText(nowDateStr);
-                }
-                super.focusLost(e);
-            }
-        });
         endDate.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -101,15 +87,6 @@ public class Success {
                     endDate.setSelectionEnd(endDate.getText().length());
                 }
                 super.mouseClicked(e);
-            }
-        });
-        endDate.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (endDate.getText().equals("")) {
-                    endDate.setText(nowDateStr);
-                }
-                super.focusLost(e);
             }
         });
         deleteButton.addActionListener(e -> {
@@ -125,27 +102,13 @@ public class Success {
         });
     }
 
-    void show(GreeUser greeUser) {
+    JPanel getSuccess(GreeUser greeUser) {
         this.greeUser = greeUser;
         if ((greeUser.getUsrPower() & 4) != 4) {
             deleteButton.setVisible(false);
         }
-        if ((greeUser.getUsrPower() & 2) != 2) {
-            insertButton.setVisible(false);
-        }
-        JFrame frame = new JFrame("Success");
-        int windowWidth = frame.getWidth();
-        int windowHeight = frame.getHeight();
-        Toolkit kit = Toolkit.getDefaultToolkit();
-        Dimension screenSize = kit.getScreenSize();
-        int screenWidth = screenSize.width;
-        int screenHeight = screenSize.height;
-        frame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
-        frame.setResizable(false);
-        frame.setContentPane(success);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
+        selectData();
+        return viewPanel;
     }
 
     public void setData(SearchData data) {
@@ -218,63 +181,9 @@ public class Success {
                 idx++;
             }
         }
-        GreeTableModel tableModel = new GreeTableModel(rows);
+        GreeTableModel tableModel = new GreeTableModel(rows, greeUser.getUsrPower());
         table1.setModel(tableModel);
         table1.updateUI();
     }
 
-    private class GreeTableModel extends AbstractTableModel {
-
-        private Object[][] data;
-
-        Class[] typeArr = {String.class, String.class, String.class, Boolean.class};
-
-        public GreeTableModel(Object[][] data) {
-            this.data = data;
-        }
-
-        public GreeTableModel() {
-        }
-
-        @Override
-        public int getRowCount() {
-            return data.length;
-        }
-
-        @Override
-        public int getColumnCount() {
-            if ((greeUser.getUsrPower() & 4) == 4) {
-                return colNamesAdm.length;
-            }
-            return colNamesNor.length;
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            return data[rowIndex][columnIndex];
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            if ((greeUser.getUsrPower() & 4) == 4) {
-                return colNamesAdm[column];
-            }
-            return colNamesNor[column];
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return true;
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            data[rowIndex][columnIndex] = aValue;
-            fireTableCellUpdated(rowIndex, columnIndex);
-        }
-
-        public Class getColumnClass(int columnIndex) {
-            return typeArr[columnIndex];
-        }
-    }
 }

@@ -1,13 +1,11 @@
 package indi.a9043.gree_scanning.mapper;
 
-import indi.a9043.gree_scanning.pojo.GreeScanningExample;
 import indi.a9043.gree_scanning.pojo.GreeScanning;
+import indi.a9043.gree_scanning.pojo.GreeScanningExample;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
+import java.util.Map;
 
 public interface GreeScanningMapper {
     /**
@@ -97,4 +95,8 @@ public interface GreeScanningMapper {
      * @mbg.generated Tue Jun 12 12:44:06 CST 2018
      */
     int updateByPrimaryKey(GreeScanning record);
+
+    List<Map> selectGreeScanningList(@Param("greeScanningList") List<GreeScanning> greeScanningList);
+
+    int insertGreeScanningList(@Param("greeScanningList") List<GreeScanning> greeScanningList);
 }
