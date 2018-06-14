@@ -1,0 +1,5 @@
+{
+  "url": "jdbc:h2:mem:soa_service_api",
+  "username": "sa",
+  "password": ""
+}

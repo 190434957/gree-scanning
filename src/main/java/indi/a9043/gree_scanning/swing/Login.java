@@ -10,6 +10,9 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+/**
+ * @author a9043 卢学能 zzz13129180808@gmail.com
+ */
 @Component
 public class Login {
     private JFrame jFrame;
@@ -70,7 +73,11 @@ public class Login {
     }
 
     public void show() {
-        jFrame = new JFrame("Login");
+        jFrame = new JFrame("登录");
+        jFrame.setContentPane(login);
+        jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        jFrame.setResizable(false);
+        jFrame.pack();
         int windowWidth = jFrame.getWidth();
         int windowHeight = jFrame.getHeight();
         Toolkit kit = Toolkit.getDefaultToolkit();
@@ -78,10 +85,6 @@ public class Login {
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
         jFrame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
-        jFrame.setContentPane(login);
-        jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        jFrame.setResizable(false);
-        jFrame.pack();
         jFrame.setVisible(true);
     }
 

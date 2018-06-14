@@ -2,6 +2,9 @@ package indi.a9043.gree_scanning.swing.pojo;
 
 import javax.swing.table.AbstractTableModel;
 
+/**
+ * @author a9043 卢学能 zzz13129180808@gmail.com
+ */
 public class GreeTableModel extends AbstractTableModel {
     private final String[] colNamesAdm = {"单据号", "产品条码", "日期", "选择"};
     private final String[] colNamesNor = {"单据号", "产品条码", "日期"};

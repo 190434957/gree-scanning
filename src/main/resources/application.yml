@@ -2,13 +2,6 @@ spring:
   aop:
     auto: true
     proxy-target-class: true
-  datasource:
-    url: jdbc:h2:mem:soa_service_api
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-    schema: classpath:test.sql
-    data: classpath:data.sql
   h2:
     console:
       enabled: true

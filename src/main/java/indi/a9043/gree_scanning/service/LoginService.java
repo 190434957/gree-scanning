@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
+/**
+ * @author a9043 卢学能 zzz13129180808@gmail.com
+ */
 @Service("loginService")
 public class LoginService {
     @Resource

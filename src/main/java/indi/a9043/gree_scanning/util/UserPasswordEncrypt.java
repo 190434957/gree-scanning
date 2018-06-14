@@ -9,11 +9,14 @@ import java.util.Base64;
 /**
  * UserPasswordEncrypt
  * 密码加密算法
+ *
+ * @author a9043 卢学能 zzz13129180808@gmail.com
  */
 @Component
 public class UserPasswordEncrypt {
 
     private static final Base64.Encoder base64Encoder = Base64.getEncoder();
+
     /**
      * 加密
      *

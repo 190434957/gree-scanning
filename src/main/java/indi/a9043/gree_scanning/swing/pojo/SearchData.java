@@ -1,5 +1,8 @@
 package indi.a9043.gree_scanning.swing.pojo;
 
+/**
+ * @author a9043 卢学能 zzz13129180808@gmail.com
+ */
 public class SearchData {
     private String startDate;
     private String endDate;

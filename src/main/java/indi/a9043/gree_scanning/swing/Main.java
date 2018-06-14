@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * @author a9043 卢学能 zzz13129180808@gmail.com
+ */
 @Component
 public class Main {
     private JPanel mainPanel;
@@ -39,7 +42,11 @@ public class Main {
         } else if ((greeUser.getUsrPower() & 2) != 2) {
             insertButton.setVisible(false);
         }
-        JFrame frame = new JFrame("mainPanel");
+        JFrame frame = new JFrame("单据管理 用户: " + greeUser.getUsrName());
+        frame.setResizable(false);
+        frame.setContentPane(mainPanel);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.pack();
         int windowWidth = frame.getWidth();
         int windowHeight = frame.getHeight();
         Toolkit kit = Toolkit.getDefaultToolkit();
@@ -47,10 +54,6 @@ public class Main {
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
         frame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
-        frame.setResizable(false);
-        frame.setContentPane(mainPanel);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
         frame.setVisible(true);
     }
 

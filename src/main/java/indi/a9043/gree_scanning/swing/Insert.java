@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author a9043 卢学能 zzz13129180808@gmail.com
+ */
 @Component
 public class Insert {
     private JPanel insertPanel;

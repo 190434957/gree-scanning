@@ -6,10 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author a9043 卢学能 zzz13129180808@gmail.com
+ */
 @SpringBootApplication
 @MapperScan("indi.a9043.gree_scanning.mapper")
 public class GreeScanningApplication {
-
     @Autowired
     public GreeScanningApplication(Login login) {
         login.show();
