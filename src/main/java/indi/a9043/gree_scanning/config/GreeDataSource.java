@@ -20,7 +20,8 @@ public class GreeDataSource {
     @Bean
     @Primary
     public DataSource getGreeDataSource() {
-        File file = new File("/Users/jxp-qxp/IdeaProjects/gree-scanning/src/main/resources/db.json");
+        File dir = new File(System.getProperty("user.dir"));
+        File file = new File("F:\\IdeaProjects\\gree-scanning\\src\\main\\resources\\db.json");
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);

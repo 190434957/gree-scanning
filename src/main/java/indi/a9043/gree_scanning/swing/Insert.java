@@ -1,5 +1,8 @@
 package indi.a9043.gree_scanning.swing;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import indi.a9043.gree_scanning.pojo.GreeScanning;
 import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.DataService;
@@ -8,13 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,39 +37,52 @@ public class Insert {
     private Object[][] rows;
 
     @Autowired
-    public Insert(DataService dataService) {
+    public Insert(final DataService dataService) {
         textField.setEditable(false);
-        selectButton.addActionListener(e -> {
-            JFileChooser jFileChooser = new JFileChooser();
-            jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            jFileChooser.showOpenDialog(insertPanel);
-            file = jFileChooser.getSelectedFile();
-            textField.setText(file.getAbsolutePath());
-            readFile();
+        selectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jFileChooser = new JFileChooser();
+                jFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                jFileChooser.showOpenDialog(insertPanel);
+                file = jFileChooser.getSelectedFile();
+                if (file != null) {
+                    textField.setText(file.getAbsolutePath());
+                    Insert.this.readFile();
+                }
+            }
         });
-        insertButton.addActionListener(e -> {
-            if (rows != null && rows.length > 0) {
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-                List<GreeScanning> greeScanningList = new ArrayList<>();
-                Arrays.stream(rows).forEach(row -> {
-                    GreeScanning greeScanning = new GreeScanning();
-                    greeScanning.setVoucher(Integer.valueOf(row[0].toString()));
-                    greeScanning.setBarcode(row[1].toString());
-                    greeScanning.setDateTime(Date.from(LocalDateTime.parse(row[2].toString(), dateTimeFormatter).atZone(ZoneId.systemDefault()).toInstant()));
-                    greeScanningList.add(greeScanning);
-                });
-                int[] res = dataService.addNewData(greeScanningList);
-                JOptionPane.showMessageDialog(insertPanel,
-                        "总" +
-                                greeScanningList.size() +
-                                "条\n重复" +
-                                res[0] +
-                                "条\n成功插入" +
-                                res[1]
-                                + "条! ",
-                        "Success", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(insertPanel, "文件无数据! ", "Error", JOptionPane.ERROR_MESSAGE);
+        insertButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (rows != null && rows.length > 0) {
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    List<GreeScanning> greeScanningList = new ArrayList<GreeScanning>();
+                    for (Object[] row : rows) {
+                        GreeScanning greeScanning = new GreeScanning();
+                        greeScanning.setVoucher(Integer.valueOf(row[0].toString()));
+                        greeScanning.setBarcode(row[1].toString());
+                        try {
+                            greeScanning.setDateTime(simpleDateFormat.parse(row[2].toString()));
+                        } catch (ParseException e1) {
+                            // TODO
+                            e1.printStackTrace();
+                        }
+                        greeScanningList.add(greeScanning);
+                    }
+                    int[] res = dataService.addNewData(greeScanningList);
+                    JOptionPane.showMessageDialog(insertPanel,
+                            "总" +
+                                    greeScanningList.size() +
+                                    "条\n重复" +
+                                    res[0] +
+                                    "条\n成功插入" +
+                                    res[1]
+                                    + "条! ",
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(insertPanel, "文件无数据! ", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
     }
@@ -78,7 +94,7 @@ public class Insert {
 
     private void readFile() {
         try {
-            List<String[]> rowList = new ArrayList<>();
+            List<String[]> rowList = new ArrayList<String[]>();
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
@@ -106,5 +122,56 @@ public class Insert {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    {
+// GUI initializer generated by IntelliJ IDEA GUI Designer
+// >>> IMPORTANT!! <<<
+// DO NOT EDIT OR ADD ANY CODE HERE!
+        $$$setupUI$$$();
+    }
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        insertPanel = new JPanel();
+        insertPanel.setLayout(new GridLayoutManager(3, 4, new Insets(0, 0, 0, 0), -1, -1));
+        insertPanel.setInheritsPopupMenu(true);
+        insertPanel.setMaximumSize(new Dimension(750, 610));
+        insertPanel.setMinimumSize(new Dimension(750, 610));
+        insertPanel.setPreferredSize(new Dimension(750, 610));
+        final Spacer spacer1 = new Spacer();
+        insertPanel.add(spacer1, new GridConstraints(1, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final JScrollPane scrollPane1 = new JScrollPane();
+        insertPanel.add(scrollPane1, new GridConstraints(2, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        table1 = new JTable();
+        scrollPane1.setViewportView(table1);
+        final JLabel label1 = new JLabel();
+        label1.setText("文件");
+        insertPanel.add(label1, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        fileText = new JPanel();
+        fileText.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
+        insertPanel.add(fileText, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(153, 24), null, 0, false));
+        textField = new JTextField();
+        textField.setInheritsPopupMenu(true);
+        fileText.add(textField, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        selectButton = new JButton();
+        selectButton.setText("选择");
+        fileText.add(selectButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        insertButton = new JButton();
+        insertButton.setText("导入");
+        fileText.add(insertButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return insertPanel;
     }
 }

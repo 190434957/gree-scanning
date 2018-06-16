@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: indi.a9043.gree_scanning.GreeScanningApplication
+

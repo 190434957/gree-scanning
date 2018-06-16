@@ -6,9 +6,9 @@
       <xy x="20" y="20" width="860" height="640"/>
     </constraints>
     <properties>
-      <maximumSize width="750" height="630"/>
-      <minimumSize width="750" height="630"/>
-      <preferredSize width="750" height="630"/>
+      <maximumSize width="750" height="610"/>
+      <minimumSize width="750" height="610"/>
+      <preferredSize width="750" height="610"/>
     </properties>
     <border type="none"/>
     <children>
@@ -20,7 +20,7 @@
       <component id="e0070" class="javax.swing.JTextField" binding="startDate">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+            <preferred-size width="150" height="35"/>
           </grid>
         </constraints>
         <properties>
@@ -31,7 +31,7 @@
       <component id="89835" class="javax.swing.JTextField" binding="voucher">
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+            <preferred-size width="150" height="35"/>
           </grid>
         </constraints>
         <properties/>
@@ -39,7 +39,7 @@
       <component id="cf6ef" class="javax.swing.JTextField" binding="barcode">
         <constraints>
           <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+            <preferred-size width="150" height="35"/>
           </grid>
         </constraints>
         <properties/>
@@ -64,7 +64,11 @@
       </vspacer>
       <component id="9918" class="javax.swing.JButton" binding="selectButton" default-binding="true">
         <constraints>
-          <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <minimum-size width="70" height="35"/>
+            <preferred-size width="70" height="35"/>
+            <maximum-size width="70" height="35"/>
+          </grid>
         </constraints>
         <properties>
           <text value="搜索"/>
@@ -97,7 +101,7 @@
       <component id="19f5d" class="javax.swing.JTextField" binding="endDate">
         <constraints>
           <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="-1"/>
+            <preferred-size width="150" height="35"/>
           </grid>
         </constraints>
         <properties>
@@ -115,7 +119,11 @@
       </component>
       <component id="3d29b" class="javax.swing.JButton" binding="deleteButton" default-binding="true">
         <constraints>
-          <grid row="1" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <minimum-size width="70" height="35"/>
+            <preferred-size width="70" height="35"/>
+            <maximum-size width="70" height="35"/>
+          </grid>
         </constraints>
         <properties>
           <text value="删除"/>
