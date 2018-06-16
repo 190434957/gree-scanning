@@ -21,6 +21,7 @@ import java.awt.*;
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 @MapperScan("indi.a9043.gree_scanning.mapper")
 public class GreeScanningApplication {
+    private static Logger logger = LoggerFactory.getLogger(GreeScanningApplication.class);
     private static String[] DEFAULT_FONT = new String[]{
             "Table.font"
             , "TableHeader.font"
@@ -60,6 +61,7 @@ public class GreeScanningApplication {
     @Autowired
     public GreeScanningApplication(Login login) {
         login.show();
+        logger.info(System.getProperty("user.dir"));
     }
 
     public static void main(String[] args) {
