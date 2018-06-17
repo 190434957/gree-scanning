@@ -3,7 +3,7 @@ package indi.a9043.gree_scanning.swing;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import indi.a9043.gree_scanning.pojo.GreeScanning;
+import indi.a9043.gree_scanning.pojo.Comm;
 import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.DataService;
 import indi.a9043.gree_scanning.swing.pojo.GreeTableModel;
@@ -119,8 +119,8 @@ public class View {
                 int rowCount = table1.getModel().getRowCount();
                 List<String> voucherList = new ArrayList<String>();
                 for (int i = 0; i < rowCount; i++) {
-                    if (table1.getModel().getValueAt(i, 3).equals(Boolean.TRUE)) {
-                        voucherList.add(table1.getModel().getValueAt(i, 0).toString());
+                    if (table1.getModel().getValueAt(i, 4).equals(Boolean.TRUE)) {
+                        voucherList.add(table1.getModel().getValueAt(i, 1).toString());
                     }
                 }
                 StringBuilder stringBuilder = new StringBuilder();
@@ -130,7 +130,7 @@ public class View {
                 }
                 stringBuilder.append("确定删除？");
                 if (JOptionPane.showConfirmDialog(viewPanel, stringBuilder.toString()) == JOptionPane.YES_OPTION) {
-                    dataService.deleteGreeScanning(voucherList);
+                    dataService.deleteComm(voucherList);
                     View.this.selectData();
                 }
             }
@@ -188,26 +188,28 @@ public class View {
             endDate = java.sql.Date.valueOf(searchData.getEndDate());
         }
 
-        List<GreeScanning> greeScanningList = dataService.selectGreeScanning(searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
+        List<Comm> commList = dataService.selectComm(searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
         Object[][] rows;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if ((greeUser.getUsrPower() & 4) == 4) {
-            rows = new Object[greeScanningList.size()][4];
+            rows = new Object[commList.size()][5];
             int idx = 0;
-            for (GreeScanning greeScanning : greeScanningList) {
-                rows[idx][0] = greeScanning.getVoucher().toString();
-                rows[idx][1] = greeScanning.getBarcode();
-                rows[idx][2] = simpleDateFormat.format(greeScanning.getDateTime());
-                rows[idx][3] = Boolean.FALSE;
+            for (Comm comm : commList) {
+                rows[idx][0] = String.valueOf(idx + 1);
+                rows[idx][1] = comm.getVoucher();
+                rows[idx][2] = comm.getBarcode();
+                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
+                rows[idx][4] = Boolean.FALSE;
                 idx++;
             }
         } else {
-            rows = new Object[greeScanningList.size()][3];
+            rows = new Object[commList.size()][4];
             int idx = 0;
-            for (GreeScanning greeScanning : greeScanningList) {
-                rows[idx][0] = greeScanning.getVoucher().toString();
-                rows[idx][1] = greeScanning.getBarcode();
-                rows[idx][2] = simpleDateFormat.format(greeScanning.getDateTime());
+            for (Comm comm : commList) {
+                rows[idx][0] = String.valueOf(idx + 1);
+                rows[idx][1] = comm.getVoucher();
+                rows[idx][2] = comm.getBarcode();
+                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
                 idx++;
             }
         }

@@ -6,11 +6,11 @@ import javax.swing.table.AbstractTableModel;
  * @author a9043 卢学能 zzz13129180808@gmail.com
  */
 public class GreeTableModel extends AbstractTableModel {
-    private final String[] colNamesAdm = {"单据号", "产品条码", "日期", "选择"};
-    private final String[] colNamesNor = {"单据号", "产品条码", "日期"};
+    private final String[] colNamesAdm = {"No.", "单据号", "产品条码", "日期", "选择"};
+    private final String[] colNamesNor = {"No.", "单据号", "产品条码", "日期"};
     private Byte power;
     private Object[][] data;
-    private Class[] typeArr = {String.class, String.class, String.class, Boolean.class};
+    private Class[] typeArr = {String.class, String.class, String.class, String.class, Boolean.class};
 
     public GreeTableModel(Object[][] data, Byte power) {
         this.data = data;

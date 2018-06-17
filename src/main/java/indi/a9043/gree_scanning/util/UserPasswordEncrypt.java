@@ -1,10 +1,10 @@
 package indi.a9043.gree_scanning.util;
 
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Component;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 /**
  * UserPasswordEncrypt
@@ -14,9 +14,6 @@ import java.util.Base64;
  */
 @Component
 public class UserPasswordEncrypt {
-
-    private static final Base64.Encoder base64Encoder = Base64.getEncoder();
-
     /**
      * 加密
      *
@@ -28,7 +25,7 @@ public class UserPasswordEncrypt {
             String userEncryptPassword = "";
             try {
                 MessageDigest mDigest = MessageDigest.getInstance("MD5");
-                userEncryptPassword = base64Encoder.encodeToString(mDigest.digest(userOriginalPassword.getBytes()));
+                userEncryptPassword = Base64.encodeBase64String(mDigest.digest(userOriginalPassword.getBytes()));
             } catch (NoSuchAlgorithmException e1) {
                 e1.printStackTrace();
             }

@@ -3,7 +3,7 @@ package indi.a9043.gree_scanning.swing;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import indi.a9043.gree_scanning.pojo.GreeScanning;
+import indi.a9043.gree_scanning.pojo.Comm;
 import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.DataService;
 import indi.a9043.gree_scanning.swing.pojo.GreeTableModel;
@@ -57,23 +57,23 @@ public class Insert {
             public void actionPerformed(ActionEvent e) {
                 if (rows != null && rows.length > 0) {
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                    List<GreeScanning> greeScanningList = new ArrayList<GreeScanning>();
+                    List<Comm> commList = new ArrayList<Comm>();
                     for (Object[] row : rows) {
-                        GreeScanning greeScanning = new GreeScanning();
-                        greeScanning.setVoucher(Integer.valueOf(row[0].toString()));
-                        greeScanning.setBarcode(row[1].toString());
+                        Comm comm = new Comm();
+                        comm.setVoucher(row[0].toString());
+                        comm.setBarcode(row[1].toString());
                         try {
-                            greeScanning.setDateTime(simpleDateFormat.parse(row[2].toString()));
+                            comm.setDateTime(simpleDateFormat.parse(row[2].toString()));
                         } catch (ParseException e1) {
                             // TODO
                             e1.printStackTrace();
                         }
-                        greeScanningList.add(greeScanning);
+                        commList.add(comm);
                     }
-                    int[] res = dataService.addNewData(greeScanningList);
+                    int[] res = dataService.addNewData(commList);
                     JOptionPane.showMessageDialog(insertPanel,
                             "总" +
-                                    greeScanningList.size() +
+                                    commList.size() +
                                     "条\n重复" +
                                     res[0] +
                                     "条\n成功插入" +

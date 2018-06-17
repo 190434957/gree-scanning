@@ -1,8 +1,8 @@
 package indi.a9043.gree_scanning.service;
 
-import indi.a9043.gree_scanning.mapper.GreeScanningMapper;
-import indi.a9043.gree_scanning.pojo.GreeScanning;
-import indi.a9043.gree_scanning.pojo.GreeScanningExample;
+import indi.a9043.gree_scanning.mapper.CommMapper;
+import indi.a9043.gree_scanning.pojo.Comm;
+import indi.a9043.gree_scanning.pojo.CommExample;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -18,14 +18,14 @@ import java.util.Map;
 @Service("dataService")
 public class DataService {
     @Resource
-    private GreeScanningMapper greeScanningMapper;
+    private CommMapper commMapper;
 
-    public List<GreeScanning> selectGreeScanning(String voucher, String barcode, Date startDate, Date endDate) {
-        GreeScanningExample greeScanningExample = new GreeScanningExample();
-        GreeScanningExample.Criteria criteria = greeScanningExample.createCriteria();
+    public List<Comm> selectComm(String voucher, String barcode, Date startDate, Date endDate) {
+        CommExample commExample = new CommExample();
+        CommExample.Criteria criteria = commExample.createCriteria();
 
         if (voucher != null && !voucher.equals("")) {
-            criteria.andVoucherEqualTo(Integer.parseInt(voucher));
+            criteria.andVoucherEqualTo(voucher);
         }
 
         if (barcode != null && !barcode.equals("")) {
@@ -40,48 +40,56 @@ public class DataService {
             criteria.andDateTimeLessThanOrEqualTo(endDate);
         }
 
-        return greeScanningMapper.selectByExample(greeScanningExample);
+/*        List<String> voucherList = commMapper.selectVoucher(commExample);
+
+        if (voucherList.size() == 0) {
+            return new ArrayList<Comm>();
+        }*/
+        return commMapper.selectByExample(commExample);
     }
 
-    public Integer addNewData(GreeScanning greeScanning) {
-        return greeScanningMapper.insert(greeScanning);
+    public Integer addNewData(Comm comm) {
+        return commMapper.insert(comm);
     }
 
-    public int[] addNewData(List<GreeScanning> greeScanningList) {
-        List<Map> tempMapList = greeScanningMapper.selectGreeScanningList(greeScanningList);
-        List<Integer> voucherList = new ArrayList<Integer>();
+    public int[] addNewData(List<Comm> commList) {
+        List<Map> tempMapList = commMapper.selectCommList(commList);
+        List<String> voucherList = new ArrayList<String>();
 
         for (Map map : tempMapList) {
             if (map.get("VOUCHER") != null) {
-                voucherList.add(Integer.valueOf(map.get("VOUCHER").toString()));
+                voucherList.add(map.get("VOUCHER").toString());
                 continue;
             }
             if (map.get("voucher") != null) {
-                voucherList.add(Integer.valueOf(map.get("voucher").toString()));
+                voucherList.add(map.get("voucher").toString());
             }
         }
 
-        Iterator<GreeScanning> it = greeScanningList.iterator();
+        Iterator<Comm> it = commList.iterator();
         while (it.hasNext()) {
-            GreeScanning x = it.next();
+            Comm x = it.next();
             if (voucherList.contains(x.getVoucher())) {
                 it.remove();
             }
         }
 
-        if (greeScanningList.size() > 0) {
-            return new int[]{voucherList.size(), greeScanningMapper.insertGreeScanningList(greeScanningList)};
+        if (commList.size() > 0) {
+            return new int[]{voucherList.size(), commMapper.insertCommList(commList)};
         } else {
             return new int[]{voucherList.size(), 0};
         }
     }
 
-    public List<String> deleteGreeScanning(List<String> voucherList) {
+    public List<String> deleteComm(List<String> voucherList) {
         List<String> stringList = new ArrayList<String>();
+        CommExample commExample = new CommExample();
         for (String voucher : voucherList) {
-            if (greeScanningMapper.deleteByPrimaryKey(Integer.valueOf(voucher)) <= 0) {
+            commExample.createCriteria().andVoucherEqualTo(voucher);
+            if (commMapper.deleteByExample(commExample) <= 0) {
                 stringList.add(voucher);
             }
+            commExample.clear();
         }
         return stringList;
     }

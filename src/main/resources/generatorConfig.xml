@@ -12,28 +12,28 @@
     <context id="DB2Tables" targetRuntime="MyBatis3">
 
         <!--数据库连接信息 -->
-        <jdbcConnection driverClass="com.mysql.jdbc.Driver" connectionURL="jdbc:mysql://localhost:3306/gree-scanning?useUnicode=true&amp;characterEncoding=utf-8" userId="root"
+        <jdbcConnection driverClass="com.microsoft.sqlserver.jdbc.SQLServerDriver" connectionURL="jdbc:sqlserver://localhost:1433;DatabaseName=guangma" userId="sa"
                         password="980524">
         </jdbcConnection>
 
         <!--生成的model 包路径 -->
-        <javaModelGenerator targetPackage="indi.a9043.pojo" targetProject="src/main/java">
+        <javaModelGenerator targetPackage="indi.a9043.gree_scanning.pojo" targetProject="src/main/java">
             <property name="enableSubPackages" value="ture"/>
             <property name="trimStrings" value="true"/>
         </javaModelGenerator>
 
         <!--生成xml mapper文件 路径 -->
-        <sqlMapGenerator targetPackage="indi.a9043.mapper" targetProject="src/main/java">
+        <sqlMapGenerator targetPackage="indi.a9043.gree_scanning.mapper" targetProject="src/main/java">
             <property name="enableSubPackages" value="ture"/>
         </sqlMapGenerator>
 
         <!-- 生成的Dao接口 的包路径 -->
-        <javaClientGenerator type="XMLMAPPER" targetPackage="indi.a9043.mapper" targetProject="src/main/java">
+        <javaClientGenerator type="XMLMAPPER" targetPackage="indi.a9043.gree_scanning.mapper" targetProject="src/main/java">
             <property name="enableSubPackages" value="ture"/>
         </javaClientGenerator>
 
         <!--对应数据库表名，多个表，请复制指定 -->
-        <table tableName="gree-scanning"/>
-        <table tableName="gree-user"/>
+        <table tableName="Comm"/>
+        <table tableName="gree_user"/>
     </context>
 </generatorConfiguration>

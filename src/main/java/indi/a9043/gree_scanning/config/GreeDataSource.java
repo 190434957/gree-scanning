@@ -5,10 +5,9 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
+import javax.swing.*;
 import java.io.*;
 
 /**
@@ -20,8 +19,10 @@ public class GreeDataSource {
     @Bean
     @Primary
     public DataSource getGreeDataSource() {
-        File dir = new File(System.getProperty("user.dir"));
-        File file = new File("F:\\IdeaProjects\\gree-scanning\\src\\main\\resources\\db.json");
+        File file = new File(System.getProperty("user.dir") + File.separator + "db.json");
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(null, "数据库配置不存在! ", "Error", JOptionPane.ERROR_MESSAGE);
+        }
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
@@ -36,10 +37,8 @@ public class GreeDataSource {
             dataSourceProperties.setUrl(dbObj.getString("url"));
             dataSourceProperties.setUsername(dbObj.getString("username"));
             dataSourceProperties.setPassword(dbObj.getString("password"));
-            EmbeddedDatabaseBuilder embeddedDatabaseBuilder = new EmbeddedDatabaseBuilder();
-            embeddedDatabaseBuilder.addScript("classpath:test.sql").addScript("classpath:data.sql");
-            embeddedDatabaseBuilder.setType(EmbeddedDatabaseType.H2);
-            return embeddedDatabaseBuilder.build();
+            dataSourceProperties.setDriverClassName(com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName());
+            return dataSourceProperties.initializeDataSourceBuilder().build();
         } catch (IOException e) {
             e.printStackTrace();
         }
