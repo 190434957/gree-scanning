@@ -20,7 +20,7 @@ public class DataService {
     @Resource
     private CommMapper commMapper;
 
-    public List<Comm> selectComm(String voucher, String barcode, Date startDate, Date endDate) {
+    public List<Comm> selectComm(String voucher, String barcode, Date startDate, Date endDate, long start, long end) {
         CommExample commExample = new CommExample();
         CommExample.Criteria criteria = commExample.createCriteria();
 
@@ -39,6 +39,9 @@ public class DataService {
         if (endDate != null) {
             criteria.andDateTimeLessThanOrEqualTo(endDate);
         }
+
+        commExample.setStart(start);
+        commExample.setEnd(end);
 
 /*        List<String> voucherList = commMapper.selectVoucher(commExample);
 
@@ -92,5 +95,28 @@ public class DataService {
             commExample.clear();
         }
         return stringList;
+    }
+
+    public long getPageCount(int pageSize, String voucher, String barcode, Date startDate, Date endDate) {
+        CommExample commExample = new CommExample();
+        CommExample.Criteria criteria = commExample.createCriteria();
+
+        if (voucher != null && !voucher.equals("")) {
+            criteria.andVoucherEqualTo(voucher);
+        }
+
+        if (barcode != null && !barcode.equals("")) {
+            criteria.andBarcodeEqualTo(barcode);
+        }
+
+        if (startDate != null) {
+            criteria.andDateTimeGreaterThanOrEqualTo(startDate);
+        }
+
+        if (endDate != null) {
+            criteria.andDateTimeLessThanOrEqualTo(endDate);
+        }
+        long count = commMapper.countByExample(commExample);
+        return (count - 1) / pageSize + 1;
     }
 }

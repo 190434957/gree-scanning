@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
@@ -35,8 +37,17 @@ public class View {
     private JTable table1;
     private JButton selectButton;
     private JButton deleteButton;
+    private JButton prePage;
+    private JButton firstPage;
+    private JButton lastPage;
+    private JButton nextPage;
+    private JSpinner pageNumSpinner;
+    private JComboBox<Integer> pageSize;
+    private JButton jumpPage;
+    private JLabel pageCountNum;
     private SearchData searchData;
     private GreeUser greeUser;
+    private int pageNum = 1;
 
     @Autowired
     public View(final DataService dataService) {
@@ -135,6 +146,45 @@ public class View {
                 }
             }
         });
+        firstPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pageNum = 1;
+                pageNumSpinner.getModel().setValue(pageNum);
+                selectData();
+            }
+        });
+        lastPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pageNum = Integer.valueOf(pageCountNum.getText());
+                pageNumSpinner.getModel().setValue(pageNum);
+                selectData();
+            }
+        });
+        register();
+        jumpPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectData();
+            }
+        });
+        prePage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pageNum = pageNum == 1 ? 1 : pageNum - 1;
+                pageNumSpinner.getModel().setValue(pageNum);
+                selectData();
+            }
+        });
+        nextPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pageNum = pageNum == Integer.valueOf(pageCountNum.getText()) ? Integer.valueOf(pageCountNum.getText()) : pageNum + 1;
+                pageNumSpinner.getModel().setValue(pageNum);
+                selectData();
+            }
+        });
     }
 
     JPanel getSuccess(GreeUser greeUser) {
@@ -188,7 +238,17 @@ public class View {
             endDate = java.sql.Date.valueOf(searchData.getEndDate());
         }
 
-        List<Comm> commList = dataService.selectComm(searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
+
+        long pageCount = dataService.getPageCount(Integer.valueOf(pageSize.getModel().getSelectedItem().toString()), searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
+        pageCountNum.setText(String.valueOf(pageCount));
+        ((SpinnerNumberModel) pageNumSpinner.getModel()).setMinimum(1);
+        ((SpinnerNumberModel) pageNumSpinner.getModel()).setMaximum(Integer.valueOf(pageCountNum.getText()));
+        List<Comm> commList = dataService.selectComm(searchData.getVoucher(),
+                searchData.getBarcode(),
+                startDate,
+                endDate,
+                (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
+                pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
         Object[][] rows;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if ((greeUser.getUsrPower() & 4) == 4) {
@@ -217,6 +277,50 @@ public class View {
         table1.setModel(tableModel);
         table1.updateUI();
     }
+
+    private void register() {
+        //register pageHelper
+        DefaultComboBoxModel<Integer> comboBoxModel = new DefaultComboBoxModel<>();
+        comboBoxModel.addElement(50);
+        comboBoxModel.addElement(100);
+        comboBoxModel.addElement(200);
+        comboBoxModel.addElement(350);
+        comboBoxModel.addElement(500);
+        comboBoxModel.setSelectedItem(comboBoxModel.getElementAt(1));
+        pageSize.setModel(comboBoxModel);
+
+        getData(searchData);
+
+        String tempDateStr = searchData.getStartDate();
+        java.sql.Date startDate = null;
+        if (tempDateStr != null && !tempDateStr.equals("") && tempDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            startDate = java.sql.Date.valueOf(searchData.getStartDate());
+        }
+
+
+        tempDateStr = searchData.getEndDate();
+        java.sql.Date endDate = null;
+        if (tempDateStr != null && !tempDateStr.equals("") && tempDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            endDate = java.sql.Date.valueOf(searchData.getEndDate());
+        }
+
+        long pageCount = dataService.getPageCount(Integer.valueOf(pageSize.getModel().getSelectedItem().toString()), searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
+        pageCountNum.setText(String.valueOf(pageCount));
+        //register pageNumSpinner
+        final SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel();
+        spinnerNumberModel.setMinimum(1);
+        spinnerNumberModel.setValue(1);
+        spinnerNumberModel.setMaximum(Integer.valueOf(pageCountNum.getText()));
+        spinnerNumberModel.setStepSize(1);
+        spinnerNumberModel.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                pageNum = Integer.valueOf(spinnerNumberModel.getValue().toString());
+            }
+        });
+        pageNumSpinner.setModel(spinnerNumberModel);
+    }
+
 
     {
 // GUI initializer generated by IntelliJ IDEA GUI Designer
@@ -249,7 +353,7 @@ public class View {
         barcode = new JTextField();
         viewPanel.add(barcode, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 35), null, 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
-        viewPanel.add(scrollPane1, new GridConstraints(2, 0, 18, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        viewPanel.add(scrollPane1, new GridConstraints(2, 0, 17, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         table1 = new JTable();
         scrollPane1.setViewportView(table1);
         final Spacer spacer2 = new Spacer();
@@ -276,6 +380,48 @@ public class View {
         deleteButton = new JButton();
         deleteButton.setText("删除");
         viewPanel.add(deleteButton, new GridConstraints(1, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new GridLayoutManager(1, 14, new Insets(0, 0, 0, 0), -1, -1));
+        viewPanel.add(panel1, new GridConstraints(19, 1, 1, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        lastPage = new JButton();
+        lastPage.setText("尾页");
+        panel1.add(lastPage, new GridConstraints(0, 10, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        nextPage = new JButton();
+        nextPage.setText("下一页");
+        panel1.add(nextPage, new GridConstraints(0, 9, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        prePage = new JButton();
+        prePage.setText("上一页");
+        panel1.add(prePage, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label5 = new JLabel();
+        label5.setText("总");
+        panel1.add(label5, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        pageCountNum = new JLabel();
+        pageCountNum.setText("0");
+        panel1.add(pageCountNum, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label6 = new JLabel();
+        label6.setText("页");
+        panel1.add(label6, new GridConstraints(0, 8, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        firstPage = new JButton();
+        firstPage.setText("首页");
+        panel1.add(firstPage, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer3 = new Spacer();
+        panel1.add(spacer3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final JLabel label7 = new JLabel();
+        label7.setText("每页");
+        panel1.add(label7, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        pageSize = new JComboBox();
+        panel1.add(pageSize, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label8 = new JLabel();
+        label8.setText("条");
+        panel1.add(label8, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        pageNumSpinner = new JSpinner();
+        panel1.add(pageNumSpinner, new GridConstraints(0, 12, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label9 = new JLabel();
+        label9.setText("当前页");
+        panel1.add(label9, new GridConstraints(0, 11, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        jumpPage = new JButton();
+        jumpPage.setText("跳转");
+        panel1.add(jumpPage, new GridConstraints(0, 13, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
