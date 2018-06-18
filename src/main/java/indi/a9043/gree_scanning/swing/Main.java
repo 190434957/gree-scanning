@@ -24,12 +24,16 @@ public class Main {
     private GreeUser greeUser;
     private View view;
     private Insert insert;
+    private Setting setting;
+    private About about;
 
 
     @Autowired
-    public Main(View view, Insert insert) {
+    public Main(View view, Insert insert, Setting setting, About about) {
         this.view = view;
         this.insert = insert;
+        this.setting = setting;
+        this.about = about;
         $$$setupUI$$$();
         viewButton.addActionListener(new ActionListener() {
             @Override
@@ -46,7 +50,8 @@ public class Main {
 
     }
 
-    void show(GreeUser greeUser) {
+    void show(final GreeUser greeUser) {
+        final JFrame frame = new JFrame("单据管理 用户: " + greeUser.getUsrName());
         this.greeUser = greeUser;
         if ((greeUser.getUsrPower() & 1) == 1 || (greeUser.getUsrPower() & 4) == 4) {
             showView();
@@ -58,7 +63,72 @@ public class Main {
         } else if ((greeUser.getUsrPower() & 2) != 2) {
             insertButton.setVisible(false);
         }
-        JFrame frame = new JFrame("单据管理 用户: " + greeUser.getUsrName());
+        JMenuItem jMenuItem1 = new JMenuItem("数据源配置");
+        jMenuItem1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String ip = JOptionPane.showInputDialog(frame, "请输入数据源IP地址", "数据源配置", JOptionPane.WARNING_MESSAGE);
+                if (ip == null) {
+                    return;
+                }
+                if (ip.matches("\\d+.\\d+.\\d+.\\d+")) {
+                    System.out.println(ip);
+                } else {
+                    JOptionPane.showMessageDialog(frame, "地址不合法！ ", "Error", JOptionPane.ERROR_MESSAGE);
+                    this.actionPerformed(e);
+                }
+            }
+        });
+        JMenuItem jMenuItem2 = new JMenuItem("修改密码");
+        jMenuItem2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final JDialog dialog = new JDialog(frame, "修改密码", true);
+                dialog.setSize(250, 400);
+                dialog.setResizable(false);
+                dialog.setLocationRelativeTo(mainPanel);
+                JPanel panel = new JPanel();
+                panel.add(setting.getPanel(greeUser, dialog));
+                dialog.setContentPane(panel);
+                dialog.setVisible(true);
+            }
+        });
+        JMenuItem jMenuItem3 = new JMenuItem("退出");
+        jMenuItem3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.dispose();
+                System.exit(0);
+            }
+        });
+        JMenuItem jMenuItem4 = new JMenuItem("关于");
+        jMenuItem4.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final JDialog dialog = new JDialog(frame, "关于", true);
+                dialog.setSize(530, 340);
+                dialog.setResizable(false);
+                dialog.setLocationRelativeTo(mainPanel);
+                JPanel panel = new JPanel();
+                panel.add(about.getMainPanel());
+                dialog.setContentPane(panel);
+                dialog.setVisible(true);
+            }
+        });
+        JMenu jMenu1 = new JMenu("菜单");
+        JMenu jMenu2 = new JMenu("帮助");
+        JMenu jMenu3 = new JMenu("");
+        jMenu3.setEnabled(false);
+        jMenu1.add(jMenuItem1);
+        jMenu1.add(jMenuItem2);
+        jMenu1.add(jMenuItem3);
+        jMenu2.add(jMenuItem4);
+        JMenuBar jMenuBar = new JMenuBar();
+        jMenuBar.add(jMenu3);
+        jMenuBar.add(jMenu1);
+        jMenuBar.add(jMenu2);
+        jMenuBar.setVisible(true);
+        frame.setJMenuBar(jMenuBar);
         frame.setResizable(false);
         frame.setContentPane(mainPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -101,14 +171,14 @@ public class Main {
     private void $$$setupUI$$$() {
         createUIComponents();
         mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayoutManager(2, 2, new Insets(10, 10, 10, 10), -1, -1));
+        mainPanel.setLayout(new GridLayoutManager(3, 3, new Insets(10, 10, 10, 10), -1, -1));
         mainPanel.setEnabled(true);
         mainPanel.setMaximumSize(new Dimension(860, 640));
         mainPanel.setMinimumSize(new Dimension(860, 640));
         mainPanel.setName("主页面");
         mainPanel.setPreferredSize(new Dimension(860, 640));
         final Spacer spacer1 = new Spacer();
-        mainPanel.add(spacer1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        mainPanel.add(spacer1, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(3, 1, new Insets(5, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new GridConstraints(0, 0, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(88, 109), null, 0, false));

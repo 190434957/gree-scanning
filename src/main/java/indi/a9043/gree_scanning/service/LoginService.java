@@ -24,13 +24,27 @@ public class LoginService {
 
     public GreeUser doLogin(GreeUser greeUser) {
         GreeUser standardGreeUser = greeUserMapper.selectByPrimaryKey(greeUser.getUsrId());
-        if(standardGreeUser == null) {
+        if (standardGreeUser == null) {
             return null;
         }
-        if(!standardGreeUser.getUsrPwd().equals(userPasswordEncrypt.encrypt(greeUser.getUsrPwd()))) {
+        if (!standardGreeUser.getUsrPwd().equals(userPasswordEncrypt.encrypt(greeUser.getUsrPwd()))) {
             return null;
         }
         standardGreeUser.setUsrPwd(null);
         return standardGreeUser;
+    }
+
+    public boolean changePassword(GreeUser greeUser, String oldPassword, String newPassword) {
+        GreeUser standardGreeUser = greeUserMapper.selectByPrimaryKey(greeUser.getUsrId());
+        if (standardGreeUser == null) {
+            return false;
+        }
+        if (!standardGreeUser.getUsrPwd().equals(userPasswordEncrypt.encrypt(oldPassword))) {
+            return false;
+        }
+        standardGreeUser.setUsrPwd(userPasswordEncrypt.encrypt(newPassword));
+        standardGreeUser.setUsrName(null);
+        standardGreeUser.setUsrPower(null);
+        return greeUserMapper.updateByPrimaryKeySelective(standardGreeUser) > 0;
     }
 }
