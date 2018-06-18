@@ -4,6 +4,7 @@ import indi.a9043.gree_scanning.mapper.CommMapper;
 import indi.a9043.gree_scanning.pojo.Comm;
 import indi.a9043.gree_scanning.pojo.CommExample;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.sql.Date;
@@ -43,20 +44,17 @@ public class DataService {
         commExample.setStart(start);
         commExample.setEnd(end);
 
-/*        List<String> voucherList = commMapper.selectVoucher(commExample);
-
-        if (voucherList.size() == 0) {
-            return new ArrayList<Comm>();
-        }*/
         return commMapper.selectByExample(commExample);
     }
 
+    @Transactional
     public Integer addNewData(Comm comm) {
         return commMapper.insert(comm);
     }
 
+    @Transactional
     public int[] addNewData(List<Comm> commList) {
-        List<Map> tempMapList = commMapper.selectCommList(commList);
+/*        List<Map> tempMapList = commMapper.selectCommList(commList);
         List<String> voucherList = new ArrayList<String>();
 
         for (Map map : tempMapList) {
@@ -75,15 +73,21 @@ public class DataService {
             if (voucherList.contains(x.getVoucher())) {
                 it.remove();
             }
+        }*/
+
+        int count = 0;
+        for (Comm comm : commList) {
+            count += commMapper.insert(comm);
         }
 
         if (commList.size() > 0) {
-            return new int[]{voucherList.size(), commMapper.insertCommList(commList)};
+            return new int[]{0, count};
         } else {
-            return new int[]{voucherList.size(), 0};
+            return new int[]{0, 0};
         }
     }
 
+    @Transactional
     public List<String> deleteComm(List<String> voucherList) {
         List<String> stringList = new ArrayList<String>();
         CommExample commExample = new CommExample();

@@ -5,7 +5,9 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.LoginService;
 import org.jb2011.lnf.beautyeye.ch3_button.BEButtonUI;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -14,6 +16,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author a9043 卢学能 zzz13129180808@gmail.com
@@ -32,20 +38,58 @@ public class Login {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                GreeUser greeUser = new GreeUser();
-                Login.this.getData(greeUser);
-                GreeUser standardGreeUser = loginService.doLogin(greeUser);
-                if (standardGreeUser == null) {
-                    JOptionPane.showMessageDialog(login, "用户名或密码错误! ", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                Byte power = standardGreeUser.getUsrPower();
-                if ((power & 1) != 1 && (power & 2) != 2 && (power & 4) != 4) {
-                    JOptionPane.showMessageDialog(login, "用户没有权限! ", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                main.show(standardGreeUser);
-                jFrame.setVisible(false);
+                final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
+                Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+                infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
+                jFrame.setGlassPane(infiniteProgressPanel);
+                jFrame.validate();
+                jFrame.setVisible(true);
+                infiniteProgressPanel.start();
+                SwingWorker swingWorker = new SwingWorker() {
+                    @Override
+                    protected Object doInBackground() throws Exception {
+                        try {
+                            GreeUser greeUser = new GreeUser();
+                            Login.this.getData(greeUser);
+                            return loginService.doLogin(greeUser);
+                        } catch (CannotGetJdbcConnectionException ee) {
+                            ee.printStackTrace();
+                            JOptionPane.showMessageDialog(login, "获取数据源失败! ", "Error", JOptionPane.ERROR_MESSAGE);
+                            infiniteProgressPanel.stop();
+                            initDb();
+                            System.exit(0);
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void done() {
+                        infiniteProgressPanel.stop();
+                        GreeUser standardGreeUser = null;
+                        try {
+                            standardGreeUser = (GreeUser) get();
+                        } catch (InterruptedException | ExecutionException e1) {
+                            e1.printStackTrace();
+                            JOptionPane.showMessageDialog(login, "未知错误! ", "Error", JOptionPane.ERROR_MESSAGE);
+                            infiniteProgressPanel.stop();
+                            initDb();
+                            System.exit(0);
+                        }
+                        if (standardGreeUser == null) {
+                            JOptionPane.showMessageDialog(login, "用户名或密码错误! ", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        Byte power = standardGreeUser.getUsrPower();
+                        if ((power & 1) != 1 && (power & 2) != 2 && (power & 4) != 4) {
+                            JOptionPane.showMessageDialog(login, "用户没有权限! ", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        main.show(standardGreeUser);
+                        jFrame.setVisible(false);
+                        super.done();
+                    }
+                };
+                swingWorker.execute();
             }
         });
         textField1.addKeyListener(new KeyAdapter() {
@@ -82,19 +126,24 @@ public class Login {
     }
 
     public void show() {
-        jFrame = new JFrame("登录");
-        jFrame.setContentPane(login);
-        jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        jFrame.setResizable(false);
-        jFrame.pack();
-        int windowWidth = jFrame.getWidth();
-        int windowHeight = jFrame.getHeight();
-        Toolkit kit = Toolkit.getDefaultToolkit();
-        Dimension screenSize = kit.getScreenSize();
-        int screenWidth = screenSize.width;
-        int screenHeight = screenSize.height;
-        jFrame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
-        jFrame.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                jFrame = new JFrame("登录");
+                jFrame.setContentPane(login);
+                jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                jFrame.setResizable(false);
+                jFrame.pack();
+                int windowWidth = jFrame.getWidth();
+                int windowHeight = jFrame.getHeight();
+                Toolkit kit = Toolkit.getDefaultToolkit();
+                Dimension screenSize = kit.getScreenSize();
+                int screenWidth = screenSize.width;
+                int screenHeight = screenSize.height;
+                jFrame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
+                jFrame.setVisible(true);
+            }
+        });
     }
 
     public void setData(GreeUser data) {
@@ -113,6 +162,50 @@ public class Login {
         if (passwordField1.getPassword() != null ? !String.valueOf(passwordField1.getPassword()).equals(data.getUsrPwd()) : data.getUsrPwd() != null)
             return true;
         return false;
+    }
+
+    private void initDb() {
+        String ip = JOptionPane.showInputDialog(login, "请输入数据源IP地址", "数据源配置", JOptionPane.WARNING_MESSAGE);
+        if (ip == null) {
+            return;
+        }
+        if (ip.matches("\\d+.\\d+.\\d+.\\d+")) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("db_ip", ip);
+            File file = new File(System.getProperty("user.dir") + File.separator + "db.json");
+            if (!file.exists()) {
+                try {
+                    if (!file.createNewFile()) {
+                        JOptionPane.showMessageDialog(login, "文件错误, 请手动设置!", "Error", JOptionPane.ERROR_MESSAGE);
+                        System.exit(0);
+                    }
+                    FileOutputStream fileOutputStream = new FileOutputStream(file);
+                    fileOutputStream.write(jsonObject.toString().getBytes());
+                    fileOutputStream.close();
+                    JOptionPane.showMessageDialog(login, "修改成功下次启动生效!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                } catch (IOException e1) {
+                    JOptionPane.showMessageDialog(login, "文件错误, 请手动设置! ", "Error", JOptionPane.ERROR_MESSAGE);
+                    e1.printStackTrace();
+                    System.exit(0);
+                }
+            } else {
+                try {
+                    FileOutputStream fileOutputStream = new FileOutputStream(file);
+                    fileOutputStream.write(jsonObject.toString().getBytes());
+                    fileOutputStream.close();
+                    JOptionPane.showMessageDialog(login, "修改成功下次启动生效!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
+                } catch (IOException e1) {
+                    JOptionPane.showMessageDialog(login, "文件错误, 请手动设置!", "Error", JOptionPane.ERROR_MESSAGE);
+                    e1.printStackTrace();
+                    System.exit(0);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "地址不合法！ ", "Error", JOptionPane.ERROR_MESSAGE);
+            initDb();
+        }
     }
 
     {

@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +20,7 @@ import java.awt.*;
  */
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
+@EnableTransactionManagement
 @MapperScan("indi.a9043.gree_scanning.mapper")
 public class GreeScanningApplication {
     private static Logger logger = LoggerFactory.getLogger(GreeScanningApplication.class);

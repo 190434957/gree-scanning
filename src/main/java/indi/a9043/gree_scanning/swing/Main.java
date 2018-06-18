@@ -4,6 +4,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import indi.a9043.gree_scanning.pojo.GreeUser;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * @author a9043 卢学能 zzz13129180808@gmail.com
@@ -72,7 +77,36 @@ public class Main {
                     return;
                 }
                 if (ip.matches("\\d+.\\d+.\\d+.\\d+")) {
-                    System.out.println(ip);
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("db_ip", ip);
+                    File file = new File(System.getProperty("user.dir") + File.separator + "db.json");
+                    if (!file.exists()) {
+                        try {
+                            if (!file.createNewFile()) {
+                                JOptionPane.showMessageDialog(mainPanel, "文件错误, 请手动设置!", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                            FileOutputStream fileOutputStream = new FileOutputStream(file);
+                            fileOutputStream.write(jsonObject.toString().getBytes());
+                            fileOutputStream.close();
+                            JOptionPane.showMessageDialog(mainPanel, "修改成功下次启动生效!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            System.exit(0);
+                        } catch (IOException e1) {
+                            JOptionPane.showMessageDialog(mainPanel, "文件错误, 请手动设置! ", "Error", JOptionPane.ERROR_MESSAGE);
+                            e1.printStackTrace();
+                        }
+                    } else {
+                        try {
+                            FileOutputStream fileOutputStream = new FileOutputStream(file);
+                            fileOutputStream.write(jsonObject.toString().getBytes());
+                            fileOutputStream.close();
+                            JOptionPane.showMessageDialog(mainPanel, "修改成功下次启动生效!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            frame.dispose();
+                            System.exit(0);
+                        } catch (IOException e1) {
+                            JOptionPane.showMessageDialog(mainPanel, "文件错误, 请手动设置!", "Error", JOptionPane.ERROR_MESSAGE);
+                            e1.printStackTrace();
+                        }
+                    }
                 } else {
                     JOptionPane.showMessageDialog(frame, "地址不合法！ ", "Error", JOptionPane.ERROR_MESSAGE);
                     this.actionPerformed(e);

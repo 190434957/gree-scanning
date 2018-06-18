@@ -19,6 +19,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,32 +56,58 @@ public class Insert {
         insertButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
+                Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+                infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
+                insertPanel.getRootPane().setGlassPane(infiniteProgressPanel);
+                insertPanel.getRootPane().validate();
+                insertPanel.getRootPane().setVisible(true);
+                infiniteProgressPanel.start();
                 if (rows != null && rows.length > 0) {
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                    List<Comm> commList = new ArrayList<Comm>();
+                    final List<Comm> commList = new ArrayList<Comm>();
                     for (Object[] row : rows) {
                         Comm comm = new Comm();
-                        comm.setVoucher(row[0].toString());
-                        comm.setBarcode(row[1].toString());
+                        comm.setVoucher(row[1].toString());
+                        comm.setBarcode(row[2].toString());
                         try {
-                            comm.setDateTime(simpleDateFormat.parse(row[2].toString()));
+                            comm.setDateTime(simpleDateFormat.parse(row[3].toString()));
                         } catch (ParseException e1) {
                             // TODO
                             e1.printStackTrace();
                         }
                         commList.add(comm);
                     }
-                    int[] res = dataService.addNewData(commList);
-                    JOptionPane.showMessageDialog(insertPanel,
-                            "总" +
-                                    commList.size() +
-                                    "条\n重复" +
-                                    res[0] +
-                                    "条\n成功插入" +
-                                    res[1]
-                                    + "条! ",
-                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                    SwingWorker<int[], Object> swingWorker = new SwingWorker<int[], Object>() {
+                        @Override
+                        protected int[] doInBackground() throws Exception {
+                            return dataService.addNewData(commList);
+                        }
+
+                        @Override
+                        protected void done() {
+                            infiniteProgressPanel.stop();
+                            int[] res = new int[2];
+                            try {
+                                res = get();
+                            } catch (InterruptedException | ExecutionException e1) {
+                                e1.printStackTrace();
+                            }
+                            JOptionPane.showMessageDialog(insertPanel,
+                                    "总" +
+                                            commList.size() +
+                                            "条\n重复" +
+                                            res[0] +
+                                            "条\n成功插入" +
+                                            res[1]
+                                            + "条! ",
+                                    "Success", JOptionPane.INFORMATION_MESSAGE);
+                            super.done();
+                        }
+                    };
+                    swingWorker.execute();
                 } else {
+                    infiniteProgressPanel.stop();
                     JOptionPane.showMessageDialog(insertPanel, "文件无数据! ", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -100,19 +127,26 @@ public class Insert {
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             Pattern pattern = Pattern.compile("\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}");
             String line;
+            int num = 1;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] strings = line.split(",");
                 for (int i = 0; i < strings.length; i++) {
                     strings[i] = strings[i].trim();
                 }
+                String[] strings1 = new String[4];
+                strings1[0] = String.valueOf(num);
+                strings1[1] = strings[0];
+                strings1[2] = strings[1];
+                strings1[3] = strings[2];
                 if (strings.length == 3) {
                     Matcher matcher = pattern.matcher(strings[2]);
                     if (matcher.matches()) {
-                        rowList.add(strings);
+                        rowList.add(strings1);
                     }
                 }
+                num++;
             }
-            rows = new Object[rowList.size()][3];
+            rows = new Object[rowList.size()][4];
             for (int i = 0; i < rowList.size(); i++) {
                 rows[i] = rowList.get(i);
             }

@@ -4,7 +4,9 @@ import indi.a9043.gree_scanning.mapper.GreeUserMapper;
 import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.util.UserPasswordEncrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -22,8 +24,16 @@ public class LoginService {
         this.userPasswordEncrypt = userPasswordEncrypt;
     }
 
-    public GreeUser doLogin(GreeUser greeUser) {
-        GreeUser standardGreeUser = greeUserMapper.selectByPrimaryKey(greeUser.getUsrId());
+    public GreeUser doLogin(GreeUser greeUser) throws CannotGetJdbcConnectionException {
+        GreeUser standardGreeUser = null;
+        try {
+            standardGreeUser = greeUserMapper.selectByPrimaryKey(greeUser.getUsrId());
+        } catch (Exception e) {
+            if (e.getCause() != null && e.getCause().getCause() instanceof CannotGetJdbcConnectionException) {
+                throw (CannotGetJdbcConnectionException) e.getCause().getCause();
+            }
+            e.printStackTrace();
+        }
         if (standardGreeUser == null) {
             return null;
         }
@@ -34,6 +44,8 @@ public class LoginService {
         return standardGreeUser;
     }
 
+
+    @Transactional
     public boolean changePassword(GreeUser greeUser, String oldPassword, String newPassword) {
         GreeUser standardGreeUser = greeUserMapper.selectByPrimaryKey(greeUser.getUsrId());
         if (standardGreeUser == null) {
