@@ -8,6 +8,7 @@ import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.DataService;
 import indi.a9043.gree_scanning.swing.pojo.GreeTableModel;
 import indi.a9043.gree_scanning.swing.pojo.SearchData;
+import indi.a9043.gree_scanning.util.NumberUtils;
 import org.jb2011.lnf.beautyeye.ch3_button.BEButtonUI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,11 +16,12 @@ import org.springframework.stereotype.Component;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -27,11 +29,8 @@ import java.util.List;
  */
 @Component
 public class View {
-    private String nowDateStr;
     private DataService dataService;
     private JPanel viewPanel;
-    private JTextField endDate;
-    private JTextField startDate;
     private JTextField voucher;
     private JTextField barcode;
     private JTable table1;
@@ -45,6 +44,12 @@ public class View {
     private JComboBox<Integer> pageSize;
     private JButton jumpPage;
     private JLabel pageCountNum;
+    private JSpinner sYear;
+    private JSpinner sDay;
+    private JSpinner sMonth;
+    private JSpinner eYear;
+    private JSpinner eDay;
+    private JSpinner eMonth;
     private SearchData searchData;
     private GreeUser greeUser;
     private int pageNum = 1;
@@ -52,48 +57,323 @@ public class View {
     @Autowired
     public View(final DataService dataService) {
         this.dataService = dataService;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        nowDateStr = simpleDateFormat.format(new Date());
-        startDate.setText(nowDateStr);
-        endDate.setText(nowDateStr);
+        $$$setupUI$$$();
+        JSpinner.DefaultEditor defaultEditor = new JSpinner.DefaultEditor(sYear);
+        JTextField textField = defaultEditor.getTextField();
+        textField.setEditable(true);
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                JFormattedTextField jFormattedTextField = ((JSpinner.DefaultEditor) sYear.getEditor()).getTextField();
+                if (jFormattedTextField.getText().length() == 3 && (jFormattedTextField.getSelectedText() == null || jFormattedTextField.getSelectedText().length() != 3)) {
+                    jFormattedTextField.transferFocus();
+                }
+                if (jFormattedTextField.getText().length() > 4) {
+                    e.consume();
+                    jFormattedTextField.setText(jFormattedTextField.getText().substring(0, 4));
+                }
+            }
+        });
+        textField.addFocusListener(new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                super.focusGained(e);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTextField tf = (JTextField) e.getSource();
+                        tf.selectAll();
+                    }
+                });
+            }
+        });
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!NumberUtils.isInteger(sYear.getModel().getValue().toString()) || Integer.valueOf(sYear.getModel().getValue().toString()) >= 2600) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            sYear.getModel().setValue(1900);
+                            ((JSpinner.DefaultEditor) sYear.getEditor()).getTextField().requestFocus();
+                            ((JSpinner.DefaultEditor) sYear.getEditor()).getTextField().selectAll();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        sYear.setEditor(defaultEditor);
+        defaultEditor = new JSpinner.DefaultEditor(eYear);
+        textField = defaultEditor.getTextField();
+        textField.setEditable(true);
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                JFormattedTextField jFormattedTextField = ((JSpinner.DefaultEditor) eYear.getEditor()).getTextField();
+                if (jFormattedTextField.getText().length() == 3 && (jFormattedTextField.getSelectedText() == null || jFormattedTextField.getSelectedText().length() != 3)) {
+                    jFormattedTextField.transferFocus();
+                }
+                if (jFormattedTextField.getText().length() > 4) {
+                    e.consume();
+                    jFormattedTextField.setText(jFormattedTextField.getText().substring(0, 4));
+                }
+            }
+        });
+        textField.addFocusListener(new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                super.focusGained(e);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTextField tf = (JTextField) e.getSource();
+                        tf.selectAll();
+                    }
+                });
+            }
+        });
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!NumberUtils.isInteger(eYear.getModel().getValue().toString()) || Integer.valueOf(eYear.getModel().getValue().toString()) >= 2600) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            eYear.getModel().setValue(1900);
+                            ((JSpinner.DefaultEditor) eYear.getEditor()).getTextField().requestFocus();
+                            ((JSpinner.DefaultEditor) eYear.getEditor()).getTextField().selectAll();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        eYear.setEditor(defaultEditor);
+        defaultEditor = new JSpinner.DefaultEditor(sMonth);
+        textField = defaultEditor.getTextField();
+        textField.setEditable(true);
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                JFormattedTextField jFormattedTextField = ((JSpinner.DefaultEditor) sMonth.getEditor()).getTextField();
+                if (jFormattedTextField.getText().length() == 1 && (jFormattedTextField.getSelectedText() == null || jFormattedTextField.getSelectedText().length() != 1)) {
+                    jFormattedTextField.transferFocus();
+                }
+                if (jFormattedTextField.getText().length() > 2) {
+                    e.consume();
+                    jFormattedTextField.setText(jFormattedTextField.getText().substring(0, 2));
+                }
+            }
+        });
+        textField.addFocusListener(new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                super.focusGained(e);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTextField tf = (JTextField) e.getSource();
+                        tf.selectAll();
+                    }
+                });
+            }
+        });
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!NumberUtils.isInteger(sMonth.getModel().getValue().toString()) || Integer.valueOf(sMonth.getModel().getValue().toString()) > 12) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            sMonth.getModel().setValue(1);
+                            ((JSpinner.DefaultEditor) sMonth.getEditor()).getTextField().requestFocus();
+                            ((JSpinner.DefaultEditor) sMonth.getEditor()).getTextField().selectAll();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        sMonth.setEditor(defaultEditor);
+        defaultEditor = new JSpinner.DefaultEditor(eMonth);
+        textField = defaultEditor.getTextField();
+        textField.setEditable(true);
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                JFormattedTextField jFormattedTextField = ((JSpinner.DefaultEditor) eMonth.getEditor()).getTextField();
+                if (jFormattedTextField.getText().length() == 1 && (jFormattedTextField.getSelectedText() == null || jFormattedTextField.getSelectedText().length() != 1)) {
+                    jFormattedTextField.transferFocus();
+                }
+                if (jFormattedTextField.getText().length() > 2) {
+                    e.consume();
+                    jFormattedTextField.setText(jFormattedTextField.getText().substring(0, 2));
+                }
+            }
+        });
+        textField.addFocusListener(new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                super.focusGained(e);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTextField tf = (JTextField) e.getSource();
+                        tf.selectAll();
+                    }
+                });
+            }
+        });
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!NumberUtils.isInteger(eMonth.getModel().getValue().toString()) || Integer.valueOf(eMonth.getModel().getValue().toString()) > 12) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            eMonth.getModel().setValue(1);
+                            ((JSpinner.DefaultEditor) eMonth.getEditor()).getTextField().requestFocus();
+                            ((JSpinner.DefaultEditor) eMonth.getEditor()).getTextField().selectAll();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        eMonth.setEditor(defaultEditor);
+        defaultEditor = new JSpinner.DefaultEditor(sDay);
+        textField = defaultEditor.getTextField();
+        textField.setEditable(true);
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                JFormattedTextField jFormattedTextField = ((JSpinner.DefaultEditor) sDay.getEditor()).getTextField();
+                if (jFormattedTextField.getText().length() == 1 && (jFormattedTextField.getSelectedText() == null || jFormattedTextField.getSelectedText().length() != 1)) {
+                    jFormattedTextField.transferFocus();
+                }
+                if (jFormattedTextField.getText().length() > 2) {
+                    e.consume();
+                    jFormattedTextField.setText(jFormattedTextField.getText().substring(0, 2));
+                }
+            }
+        });
+        textField.addFocusListener(new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                super.focusGained(e);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTextField tf = (JTextField) e.getSource();
+                        tf.selectAll();
+                    }
+                });
+            }
+        });
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!NumberUtils.isInteger(sDay.getModel().getValue().toString()) || Integer.valueOf(sDay.getModel().getValue().toString()) > 31) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            sDay.getModel().setValue(1);
+                            ((JSpinner.DefaultEditor) sDay.getEditor()).getTextField().requestFocus();
+                            ((JSpinner.DefaultEditor) sDay.getEditor()).getTextField().selectAll();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        sDay.setEditor(defaultEditor);
+        defaultEditor = new JSpinner.DefaultEditor(eDay);
+        textField = defaultEditor.getTextField();
+        textField.setEditable(true);
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                JFormattedTextField jFormattedTextField = ((JSpinner.DefaultEditor) eDay.getEditor()).getTextField();
+                if (jFormattedTextField.getText().length() == 1 && (jFormattedTextField.getSelectedText() == null || jFormattedTextField.getSelectedText().length() != 1)) {
+                    jFormattedTextField.transferFocus();
+                }
+                if (jFormattedTextField.getText().length() > 2) {
+                    e.consume();
+                    jFormattedTextField.setText(jFormattedTextField.getText().substring(0, 2));
+                }
+            }
+        });
+        textField.addFocusListener(new FocusAdapter() {
+            public void focusGained(final FocusEvent e) {
+                super.focusGained(e);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTextField tf = (JTextField) e.getSource();
+                        tf.selectAll();
+                    }
+                });
+            }
+        });
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!NumberUtils.isInteger(eDay.getModel().getValue().toString()) || Integer.valueOf(eDay.getModel().getValue().toString()) > 31) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            eDay.getModel().setValue(1);
+                            ((JSpinner.DefaultEditor) eDay.getEditor()).getTextField().requestFocus();
+                            ((JSpinner.DefaultEditor) eDay.getEditor()).getTextField().selectAll();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        eDay.setEditor(defaultEditor);
         selectButton.setUI(new BEButtonUI().setNormalColor(BEButtonUI.NormalColor.lightBlue));
         deleteButton.setUI(new BEButtonUI().setNormalColor(BEButtonUI.NormalColor.red));
 
         searchData = new SearchData();
-        startDate.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                char t = e.getKeyChar();
-                if ((t >= '0' && t <= '9')) {
-                    super.keyTyped(e);
-                } else if (t == '-') {
-                    super.keyTyped(e);
-                } else {
-                    e.consume();
-                }
-                if (startDate.getText().length() > 10) {
-                    e.consume();
-                    startDate.setText(startDate.getText().substring(0, 10));
-                }
-            }
-        });
-        endDate.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                char t = e.getKeyChar();
-                if ((t >= '0' && t <= '9')) {
-                    super.keyTyped(e);
-                } else if (t == '-') {
-                    super.keyTyped(e);
-                } else {
-                    e.consume();
-                }
-                if (endDate.getText().length() > 10) {
-                    e.consume();
-                    endDate.setText(endDate.getText().substring(0, 10));
-                }
-            }
-        });
         selectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,26 +382,6 @@ public class View {
                 } else {
                     JOptionPane.showMessageDialog(viewPanel, "你没有查询权限! ", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-            }
-        });
-        startDate.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (startDate.getText().equals(nowDateStr)) {
-                    startDate.setSelectionStart(0);
-                    startDate.setSelectionEnd(startDate.getText().length());
-                }
-                super.mouseClicked(e);
-            }
-        });
-        endDate.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (endDate.getText().equals(nowDateStr)) {
-                    endDate.setSelectionStart(0);
-                    endDate.setSelectionEnd(endDate.getText().length());
-                }
-                super.mouseClicked(e);
             }
         });
         deleteButton.addActionListener(new ActionListener() {
@@ -162,7 +422,6 @@ public class View {
                 selectData();
             }
         });
-        register();
         jumpPage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -196,9 +455,82 @@ public class View {
                 pageNumSpinner.getModel().setValue(pageNum);
             }
         });
+        sYear.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    int val = Integer.valueOf(sYear.getModel().getValue().toString());
+                    sYear.getModel().setValue(val > 0 ? val - 1 : val);
+                } else {
+                    int val = Integer.valueOf(sYear.getModel().getValue().toString());
+                    sYear.getModel().setValue(val < 9999 ? val + 1 : val);
+                }
+            }
+        });
+        eYear.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    int val = Integer.valueOf(eYear.getModel().getValue().toString());
+                    eYear.getModel().setValue(val > 0 ? val - 1 : val);
+                } else {
+                    int val = Integer.valueOf(eYear.getModel().getValue().toString());
+                    eYear.getModel().setValue(val < 9999 ? val + 1 : val);
+                }
+            }
+        });
+        sMonth.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    int val = Integer.valueOf(sMonth.getModel().getValue().toString());
+                    sMonth.getModel().setValue(val > 0 ? val - 1 : val);
+                } else {
+                    int val = Integer.valueOf(sMonth.getModel().getValue().toString());
+                    sMonth.getModel().setValue(val < 12 ? val + 1 : val);
+                }
+            }
+        });
+        eMonth.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    int val = Integer.valueOf(eMonth.getModel().getValue().toString());
+                    eMonth.getModel().setValue(val > 0 ? val - 1 : val);
+                } else {
+                    int val = Integer.valueOf(eMonth.getModel().getValue().toString());
+                    eMonth.getModel().setValue(val < 12 ? val + 1 : val);
+                }
+            }
+        });
+        sDay.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    int val = Integer.valueOf(sDay.getModel().getValue().toString());
+                    sDay.getModel().setValue(val > 0 ? val - 1 : val);
+                } else {
+                    int val = Integer.valueOf(sDay.getModel().getValue().toString());
+                    sDay.getModel().setValue(val < 31 ? val + 1 : val);
+                }
+            }
+        });
+        eDay.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    int val = Integer.valueOf(eDay.getModel().getValue().toString());
+                    eDay.getModel().setValue(val > 0 ? val - 1 : val);
+                } else {
+                    int val = Integer.valueOf(eDay.getModel().getValue().toString());
+                    eDay.getModel().setValue(val < 31 ? val + 1 : val);
+                }
+            }
+        });
     }
 
     JPanel getSuccess(GreeUser greeUser) {
+        register();
         this.greeUser = greeUser;
         if ((greeUser.getUsrPower() & 4) != 4) {
             deleteButton.setVisible(false);
@@ -207,89 +539,95 @@ public class View {
         return viewPanel;
     }
 
-    public void setData(SearchData data) {
-        startDate.setText(data.getStartDate());
-        endDate.setText(data.getEndDate());
-        voucher.setText(data.getVoucher());
-        barcode.setText(data.getBarcode());
-    }
-
-    private void getData(SearchData data) {
-        data.setStartDate(startDate.getText());
-        data.setEndDate(endDate.getText());
-        data.setVoucher(voucher.getText());
-        data.setBarcode(barcode.getText());
-    }
-
-    public boolean isModified(SearchData data) {
-        if (startDate.getText() != null ? !startDate.getText().equals(data.getStartDate()) : data.getStartDate() != null)
-            return true;
-        if (endDate.getText() != null ? !endDate.getText().equals(data.getEndDate()) : data.getEndDate() != null)
-            return true;
-        if (voucher.getText() != null ? !voucher.getText().equals(data.getVoucher()) : data.getVoucher() != null)
-            return true;
-        if (barcode.getText() != null ? !barcode.getText().equals(data.getBarcode()) : data.getBarcode() != null)
-            return true;
-        return false;
-    }
-
     private void selectData() {
         getData(searchData);
 
-        String tempDateStr = searchData.getStartDate();
-        java.sql.Date startDate = null;
-        if (tempDateStr != null && !tempDateStr.equals("") && tempDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            startDate = java.sql.Date.valueOf(searchData.getStartDate());
-        }
+        try {
+            java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                    sYear.getModel().getValue(),
+                    sMonth.getModel().getValue(),
+                    sDay.getModel().getValue()));
+            java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                    eYear.getModel().getValue(),
+                    eMonth.getModel().getValue(),
+                    eDay.getModel().getValue()));
 
-
-        tempDateStr = searchData.getEndDate();
-        java.sql.Date endDate = null;
-        if (tempDateStr != null && !tempDateStr.equals("") && tempDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            endDate = java.sql.Date.valueOf(searchData.getEndDate());
-        }
-
-
-        long pageCount = dataService.getPageCount(Integer.valueOf(pageSize.getModel().getSelectedItem().toString()), searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
-        pageCountNum.setText(String.valueOf(pageCount));
-        ((SpinnerNumberModel) pageNumSpinner.getModel()).setMinimum(1);
-        ((SpinnerNumberModel) pageNumSpinner.getModel()).setMaximum(Integer.valueOf(pageCountNum.getText()));
-        List<Comm> commList = dataService.selectComm(searchData.getVoucher(),
-                searchData.getBarcode(),
-                startDate,
-                endDate,
-                (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
-                pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
-        Object[][] rows;
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        if ((greeUser.getUsrPower() & 4) == 4) {
-            rows = new Object[commList.size()][5];
-            int idx = 0;
-            for (Comm comm : commList) {
-                rows[idx][0] = String.valueOf(idx + 1);
-                rows[idx][1] = comm.getVoucher();
-                rows[idx][2] = comm.getBarcode();
-                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
-                rows[idx][4] = Boolean.FALSE;
-                idx++;
+            long pageCount = dataService.getPageCount(Integer.valueOf(pageSize.getModel().getSelectedItem().toString()), searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
+            pageCountNum.setText(String.valueOf(pageCount));
+            ((SpinnerNumberModel) pageNumSpinner.getModel()).setMinimum(1);
+            ((SpinnerNumberModel) pageNumSpinner.getModel()).setMaximum(Integer.valueOf(pageCountNum.getText()));
+            List<Comm> commList = dataService.selectComm(searchData.getVoucher(),
+                    searchData.getBarcode(),
+                    startDate,
+                    endDate,
+                    (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
+                    pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
+            Object[][] rows;
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if ((greeUser.getUsrPower() & 4) == 4) {
+                rows = new Object[commList.size()][5];
+                int idx = 0;
+                for (Comm comm : commList) {
+                    rows[idx][0] = String.valueOf(idx + 1);
+                    rows[idx][1] = comm.getVoucher();
+                    rows[idx][2] = comm.getBarcode();
+                    rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
+                    rows[idx][4] = Boolean.FALSE;
+                    idx++;
+                }
+            } else {
+                rows = new Object[commList.size()][4];
+                int idx = 0;
+                for (Comm comm : commList) {
+                    rows[idx][0] = String.valueOf(idx + 1);
+                    rows[idx][1] = comm.getVoucher();
+                    rows[idx][2] = comm.getBarcode();
+                    rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
+                    idx++;
+                }
             }
-        } else {
-            rows = new Object[commList.size()][4];
-            int idx = 0;
-            for (Comm comm : commList) {
-                rows[idx][0] = String.valueOf(idx + 1);
-                rows[idx][1] = comm.getVoucher();
-                rows[idx][2] = comm.getBarcode();
-                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
-                idx++;
-            }
+            GreeTableModel tableModel = new GreeTableModel(rows, greeUser.getUsrPower());
+            table1.setModel(tableModel);
+            table1.updateUI();
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(viewPanel, "搜索条件非法", "Error", JOptionPane.ERROR_MESSAGE);
         }
-        GreeTableModel tableModel = new GreeTableModel(rows, greeUser.getUsrPower());
-        table1.setModel(tableModel);
-        table1.updateUI();
     }
 
     private void register() {
+        //register date picker
+        SpinnerNumberModel sYearModel = new SpinnerNumberModel();
+        sYearModel.setMinimum(1900);
+        sYearModel.setMaximum(2500);
+        sYear.setModel(sYearModel);
+        SpinnerNumberModel eYearModel = new SpinnerNumberModel();
+        eYearModel.setMinimum(1900);
+        eYearModel.setMaximum(2500);
+        eYear.setModel(eYearModel);
+        SpinnerNumberModel sMonthModel = new SpinnerNumberModel();
+        sMonthModel.setMinimum(1);
+        sMonthModel.setMaximum(12);
+        sMonth.setModel(sMonthModel);
+        SpinnerNumberModel eMonthModel = new SpinnerNumberModel();
+        eMonthModel.setMinimum(1);
+        eMonthModel.setMaximum(12);
+        eMonth.setModel(eMonthModel);
+        SpinnerNumberModel sDayModel = new SpinnerNumberModel();
+        sDayModel.setMinimum(1);
+        sDayModel.setMaximum(31);
+        sDay.setModel(sDayModel);
+        SpinnerNumberModel eDayModel = new SpinnerNumberModel();
+        eDayModel.setMinimum(1);
+        eDayModel.setMaximum(31);
+        eDay.setModel(eDayModel);
+        Calendar calendar = Calendar.getInstance();
+        sYear.setValue(calendar.get(Calendar.YEAR));
+        sMonth.setValue(calendar.get(Calendar.MONTH) + 1);
+        sDay.setValue(calendar.get(Calendar.DAY_OF_MONTH));
+        eYear.setValue(calendar.get(Calendar.YEAR));
+        eMonth.setValue(calendar.get(Calendar.MONTH) + 1);
+        eDay.setValue(calendar.get(Calendar.DAY_OF_MONTH));
+
         //register pageHelper
         DefaultComboBoxModel<Integer> comboBoxModel = new DefaultComboBoxModel<>();
         comboBoxModel.addElement(50);
@@ -302,21 +640,23 @@ public class View {
 
         getData(searchData);
 
-        String tempDateStr = searchData.getStartDate();
-        java.sql.Date startDate = null;
-        if (tempDateStr != null && !tempDateStr.equals("") && tempDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            startDate = java.sql.Date.valueOf(searchData.getStartDate());
-        }
+        java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                sYear.getModel().getValue(),
+                sMonth.getModel().getValue(),
+                sDay.getModel().getValue()));
+        java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                eYear.getModel().getValue(),
+                eMonth.getModel().getValue(),
+                eDay.getModel().getValue()));
 
-
-        tempDateStr = searchData.getEndDate();
-        java.sql.Date endDate = null;
-        if (tempDateStr != null && !tempDateStr.equals("") && tempDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            endDate = java.sql.Date.valueOf(searchData.getEndDate());
-        }
-
-        long pageCount = dataService.getPageCount(Integer.valueOf(pageSize.getModel().getSelectedItem().toString()), searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
+        long pageCount = dataService.getPageCount(
+                Integer.valueOf(pageSize.getModel().getSelectedItem().toString()),
+                searchData.getVoucher(),
+                searchData.getBarcode(),
+                startDate,
+                endDate);
         pageCountNum.setText(String.valueOf(pageCount));
+
         //register pageNumSpinner
         final SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel();
         spinnerNumberModel.setMinimum(1);
@@ -333,11 +673,22 @@ public class View {
     }
 
 
-    {
-// GUI initializer generated by IntelliJ IDEA GUI Designer
-// >>> IMPORTANT!! <<<
-// DO NOT EDIT OR ADD ANY CODE HERE!
-        $$$setupUI$$$();
+    public void setData(SearchData data) {
+        voucher.setText(data.getVoucher());
+        barcode.setText(data.getBarcode());
+    }
+
+    public void getData(SearchData data) {
+        data.setVoucher(voucher.getText());
+        data.setBarcode(barcode.getText());
+    }
+
+    public boolean isModified(SearchData data) {
+        if (voucher.getText() != null ? !voucher.getText().equals(data.getVoucher()) : data.getVoucher() != null)
+            return true;
+        if (barcode.getText() != null ? !barcode.getText().equals(data.getBarcode()) : data.getBarcode() != null)
+            return true;
+        return false;
     }
 
     /**
@@ -349,51 +700,33 @@ public class View {
      */
     private void $$$setupUI$$$() {
         viewPanel = new JPanel();
-        viewPanel.setLayout(new GridLayoutManager(20, 7, new Insets(0, 0, 0, 0), -1, -1));
+        viewPanel.setLayout(new GridLayoutManager(20, 6, new Insets(0, 0, 0, 0), -1, -1));
         viewPanel.setMaximumSize(new Dimension(750, 610));
         viewPanel.setMinimumSize(new Dimension(750, 610));
         viewPanel.setPreferredSize(new Dimension(750, 610));
-        final Spacer spacer1 = new Spacer();
-        viewPanel.add(spacer1, new GridConstraints(0, 2, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        startDate = new JTextField();
-        startDate.setText("0000-00-00");
-        startDate.setToolTipText("开始时间");
-        viewPanel.add(startDate, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 35), null, 0, false));
         voucher = new JTextField();
-        viewPanel.add(voucher, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 35), null, 0, false));
-        barcode = new JTextField();
-        viewPanel.add(barcode, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 35), null, 0, false));
+        viewPanel.add(voucher, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(250, 35), new Dimension(250, 35), new Dimension(250, 35), 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
-        viewPanel.add(scrollPane1, new GridConstraints(2, 0, 17, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        viewPanel.add(scrollPane1, new GridConstraints(2, 0, 17, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         table1 = new JTable();
         scrollPane1.setViewportView(table1);
-        final Spacer spacer2 = new Spacer();
-        viewPanel.add(spacer2, new GridConstraints(0, 5, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        viewPanel.add(spacer1, new GridConstraints(0, 4, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         selectButton = new JButton();
         selectButton.setText("搜索");
-        viewPanel.add(selectButton, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
+        viewPanel.add(selectButton, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("单据号");
         viewPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label2 = new JLabel();
         label2.setText("从");
         viewPanel.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JLabel label3 = new JLabel();
-        label3.setText("条码");
-        viewPanel.add(label3, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        endDate = new JTextField();
-        endDate.setText("0000-00-00");
-        endDate.setToolTipText("结束时间");
-        viewPanel.add(endDate, new GridConstraints(1, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 35), null, 0, false));
-        final JLabel label4 = new JLabel();
-        label4.setText("到");
-        viewPanel.add(label4, new GridConstraints(1, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         deleteButton = new JButton();
         deleteButton.setText("删除");
-        viewPanel.add(deleteButton, new GridConstraints(1, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
+        viewPanel.add(deleteButton, new GridConstraints(1, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 14, new Insets(0, 0, 0, 0), -1, -1));
-        viewPanel.add(panel1, new GridConstraints(19, 1, 1, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        viewPanel.add(panel1, new GridConstraints(19, 0, 1, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         lastPage = new JButton();
         lastPage.setText("尾页");
         panel1.add(lastPage, new GridConstraints(0, 10, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -403,36 +736,80 @@ public class View {
         prePage = new JButton();
         prePage.setText("上一页");
         panel1.add(prePage, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JLabel label5 = new JLabel();
-        label5.setText("总");
-        panel1.add(label5, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label3 = new JLabel();
+        label3.setText("总");
+        panel1.add(label3, new GridConstraints(0, 6, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         pageCountNum = new JLabel();
         pageCountNum.setText("0");
         panel1.add(pageCountNum, new GridConstraints(0, 7, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JLabel label6 = new JLabel();
-        label6.setText("页");
-        panel1.add(label6, new GridConstraints(0, 8, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label4 = new JLabel();
+        label4.setText("页");
+        panel1.add(label4, new GridConstraints(0, 8, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         firstPage = new JButton();
         firstPage.setText("首页");
         panel1.add(firstPage, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer3 = new Spacer();
-        panel1.add(spacer3, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        final JLabel label7 = new JLabel();
-        label7.setText("每页");
-        panel1.add(label7, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer2 = new Spacer();
+        panel1.add(spacer2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final JLabel label5 = new JLabel();
+        label5.setText("每页");
+        panel1.add(label5, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         pageSize = new JComboBox();
         panel1.add(pageSize, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JLabel label8 = new JLabel();
-        label8.setText("条");
-        panel1.add(label8, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label6 = new JLabel();
+        label6.setText("条");
+        panel1.add(label6, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         pageNumSpinner = new JSpinner();
         panel1.add(pageNumSpinner, new GridConstraints(0, 12, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final JLabel label9 = new JLabel();
-        label9.setText("当前页");
-        panel1.add(label9, new GridConstraints(0, 11, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label7 = new JLabel();
+        label7.setText("当前页");
+        panel1.add(label7, new GridConstraints(0, 11, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         jumpPage = new JButton();
         jumpPage.setText("跳转");
         panel1.add(jumpPage, new GridConstraints(0, 13, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new GridLayoutManager(1, 6, new Insets(0, 0, 0, 0), -1, -1));
+        viewPanel.add(panel2, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(250, 35), new Dimension(250, 35), new Dimension(250, 35), 0, false));
+        sYear = new JSpinner();
+        panel2.add(sYear, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sDay = new JSpinner();
+        panel2.add(sDay, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sMonth = new JSpinner();
+        panel2.add(sMonth, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label8 = new JLabel();
+        label8.setText("年");
+        panel2.add(label8, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label9 = new JLabel();
+        label9.setText("月");
+        panel2.add(label9, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label10 = new JLabel();
+        label10.setText("日");
+        panel2.add(label10, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        barcode = new JTextField();
+        viewPanel.add(barcode, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(250, 35), new Dimension(250, 35), new Dimension(250, 35), 0, false));
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(1, 6, new Insets(0, 0, 0, 0), -1, -1));
+        viewPanel.add(panel3, new GridConstraints(1, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(250, 35), new Dimension(250, 35), new Dimension(250, 35), 0, false));
+        eYear = new JSpinner();
+        panel3.add(eYear, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        eDay = new JSpinner();
+        panel3.add(eDay, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        eMonth = new JSpinner();
+        panel3.add(eMonth, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label11 = new JLabel();
+        label11.setText("年");
+        panel3.add(label11, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label12 = new JLabel();
+        label12.setText("月");
+        panel3.add(label12, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label13 = new JLabel();
+        label13.setText("日");
+        panel3.add(label13, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label14 = new JLabel();
+        label14.setText("条码");
+        viewPanel.add(label14, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label15 = new JLabel();
+        label15.setText("到");
+        viewPanel.add(label15, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
