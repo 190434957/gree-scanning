@@ -185,6 +185,17 @@ public class View {
                 selectData();
             }
         });
+        pageNumSpinner.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation() > 0) {
+                    pageNum = pageNum == 1 ? 1 : pageNum - 1;
+                } else {
+                    pageNum = pageNum == Integer.valueOf(pageCountNum.getText()) ? Integer.valueOf(pageCountNum.getText()) : pageNum + 1;
+                }
+                pageNumSpinner.getModel().setValue(pageNum);
+            }
+        });
     }
 
     JPanel getSuccess(GreeUser greeUser) {
