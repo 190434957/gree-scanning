@@ -12,10 +12,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutionException;
 
 @Component
 public class Setting {
-    private LoginService loginService;
     private JPanel panel;
     private JDialog jDialog;
     private JPasswordField textField1;
@@ -45,19 +45,45 @@ public class Setting {
                     JOptionPane.showMessageDialog(panel, "确认新密码不一致", "Warn", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                if (loginService.changePassword(greeUser, String.valueOf(textField1.getPassword()), String.valueOf(textField2.getPassword()))) {
-                    JOptionPane.showMessageDialog(panel, "修改成功", "Success", JOptionPane.PLAIN_MESSAGE);
-                    jDialog.setVisible(false);
-                    jDialog.dispose();
-                    textField1.setText("");
-                    textField2.setText("");
-                    textField3.setText("");
-                    return;
+                final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
+                Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+                infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
+                if (panel.getRootPane() != null) {
+                    panel.getRootPane().setGlassPane(infiniteProgressPanel);
+                    panel.getRootPane().validate();
+                    panel.getRootPane().setVisible(true);
+                    infiniteProgressPanel.start();
                 }
-                JOptionPane.showMessageDialog(panel, "修改失败", "Error", JOptionPane.ERROR_MESSAGE);
-                textField1.setText("");
-                textField2.setText("");
-                textField3.setText("");
+                SwingWorker<Boolean, Object> swingWorker = new SwingWorker<Boolean, Object>() {
+                    @Override
+                    protected Boolean doInBackground() throws Exception {
+                        return loginService.changePassword(greeUser, String.valueOf(textField1.getPassword()), String.valueOf(textField2.getPassword()));
+                    }
+
+                    @Override
+                    protected void done() {
+                        infiniteProgressPanel.stop();
+                        try {
+                            Boolean res = get();
+                            if (res != null && res) {
+                                JOptionPane.showMessageDialog(panel, "修改成功", "Success", JOptionPane.PLAIN_MESSAGE);
+                                jDialog.setVisible(false);
+                                jDialog.dispose();
+                                textField1.setText("");
+                                textField2.setText("");
+                                textField3.setText("");
+                                return;
+                            }
+                        } catch (InterruptedException | ExecutionException e1) {
+                            e1.printStackTrace();
+                        }
+                        JOptionPane.showMessageDialog(panel, "修改失败", "Error", JOptionPane.ERROR_MESSAGE);
+                        textField1.setText("");
+                        textField2.setText("");
+                        textField3.setText("");
+                    }
+                };
+                swingWorker.execute();
             }
         });
     }
