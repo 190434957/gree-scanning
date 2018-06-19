@@ -23,6 +23,7 @@ import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author a9043 卢学能 zzz13129180808@gmail.com
@@ -388,7 +389,7 @@ public class View {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int rowCount = table1.getModel().getRowCount();
-                List<String> voucherList = new ArrayList<String>();
+                final List<String> voucherList = new ArrayList<String>();
                 for (int i = 0; i < rowCount; i++) {
                     if (table1.getModel().getValueAt(i, 4).equals(Boolean.TRUE)) {
                         voucherList.add(table1.getModel().getValueAt(i, 1).toString());
@@ -401,8 +402,27 @@ public class View {
                 }
                 stringBuilder.append("确定删除？");
                 if (JOptionPane.showConfirmDialog(viewPanel, stringBuilder.toString()) == JOptionPane.YES_OPTION) {
-                    dataService.deleteComm(voucherList);
-                    View.this.selectData();
+                    final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
+                    Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+                    infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
+                    viewPanel.getRootPane().setGlassPane(infiniteProgressPanel);
+                    viewPanel.getRootPane().validate();
+                    viewPanel.getRootPane().setVisible(true);
+                    infiniteProgressPanel.start();
+                    SwingWorker swingWorker = new SwingWorker() {
+                        @Override
+                        protected Object doInBackground() throws Exception {
+                            return dataService.deleteComm(voucherList);
+                        }
+
+                        @Override
+                        protected void done() {
+                            infiniteProgressPanel.stop();
+                            View.this.selectData();
+                            super.done();
+                        }
+                    };
+                    swingWorker.execute();
                 }
             }
         });
@@ -540,14 +560,23 @@ public class View {
     }
 
     private void selectData() {
+        final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
+        if (viewPanel.getRootPane() != null) {
+            viewPanel.getRootPane().setGlassPane(infiniteProgressPanel);
+            viewPanel.getRootPane().validate();
+            viewPanel.getRootPane().setVisible(true);
+            infiniteProgressPanel.start();
+        }
         getData(searchData);
 
         try {
-            java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+            final java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
                     sYear.getModel().getValue(),
                     sMonth.getModel().getValue(),
                     sDay.getModel().getValue()));
-            java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+            final java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
                     eYear.getModel().getValue(),
                     eMonth.getModel().getValue(),
                     eDay.getModel().getValue()));
@@ -556,40 +585,58 @@ public class View {
             pageCountNum.setText(String.valueOf(pageCount));
             ((SpinnerNumberModel) pageNumSpinner.getModel()).setMinimum(1);
             ((SpinnerNumberModel) pageNumSpinner.getModel()).setMaximum(Integer.valueOf(pageCountNum.getText()));
-            List<Comm> commList = dataService.selectComm(searchData.getVoucher(),
-                    searchData.getBarcode(),
-                    startDate,
-                    endDate,
-                    (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
-                    pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
-            Object[][] rows;
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            if ((greeUser.getUsrPower() & 4) == 4) {
-                rows = new Object[commList.size()][5];
-                int idx = 0;
-                for (Comm comm : commList) {
-                    rows[idx][0] = String.valueOf(idx + 1);
-                    rows[idx][1] = comm.getVoucher();
-                    rows[idx][2] = comm.getBarcode();
-                    rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
-                    rows[idx][4] = Boolean.FALSE;
-                    idx++;
+            SwingWorker<List<Comm>, Object> swingWorker = new SwingWorker<List<Comm>, Object>() {
+                @Override
+                protected List<Comm> doInBackground() throws Exception {
+                    return dataService.selectComm(searchData.getVoucher(),
+                            searchData.getBarcode(),
+                            startDate,
+                            endDate,
+                            (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
+                            pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
                 }
-            } else {
-                rows = new Object[commList.size()][4];
-                int idx = 0;
-                for (Comm comm : commList) {
-                    rows[idx][0] = String.valueOf(idx + 1);
-                    rows[idx][1] = comm.getVoucher();
-                    rows[idx][2] = comm.getBarcode();
-                    rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
-                    idx++;
+
+                @Override
+                protected void done() {
+                    infiniteProgressPanel.stop();
+                    List<Comm> commList;
+                    try {
+                        commList = get();
+                        Object[][] rows;
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        if ((greeUser.getUsrPower() & 4) == 4) {
+                            rows = new Object[commList.size()][5];
+                            int idx = 0;
+                            for (Comm comm : commList) {
+                                rows[idx][0] = String.valueOf(idx + 1);
+                                rows[idx][1] = comm.getVoucher();
+                                rows[idx][2] = comm.getBarcode();
+                                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
+                                rows[idx][4] = Boolean.FALSE;
+                                idx++;
+                            }
+                        } else {
+                            rows = new Object[commList.size()][4];
+                            int idx = 0;
+                            for (Comm comm : commList) {
+                                rows[idx][0] = String.valueOf(idx + 1);
+                                rows[idx][1] = comm.getVoucher();
+                                rows[idx][2] = comm.getBarcode();
+                                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
+                                idx++;
+                            }
+                        }
+                        GreeTableModel tableModel = new GreeTableModel(rows, greeUser.getUsrPower());
+                        table1.setModel(tableModel);
+                        table1.updateUI();
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-            GreeTableModel tableModel = new GreeTableModel(rows, greeUser.getUsrPower());
-            table1.setModel(tableModel);
-            table1.updateUI();
+            };
+            swingWorker.execute();
         } catch (IllegalArgumentException e) {
+            infiniteProgressPanel.stop();
             JOptionPane.showMessageDialog(viewPanel, "搜索条件非法", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
