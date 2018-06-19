@@ -5,7 +5,6 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import indi.a9043.gree_scanning.pojo.GreeUser;
 import indi.a9043.gree_scanning.service.LoginService;
 import org.jb2011.lnf.beautyeye.ch3_button.BEButtonUI;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -31,13 +27,17 @@ public class Login {
     private JTextField textField1;
     private JPasswordField passwordField1;
     private JButton loginButton;
+    private DataSourceSetting dataSourceSetting;
 
     @Autowired
-    public Login(final LoginService loginService, final Main main) {
+    public Login(final LoginService loginService, final Main main, DataSourceSetting dataSourceSetting) {
+        this.dataSourceSetting = dataSourceSetting;
         loginButton.setUI(new BEButtonUI().setNormalColor(BEButtonUI.NormalColor.green));
-        loginButton.addActionListener(new ActionListener() {
+        final ActionListener loginListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                final ActionListener _this = this;
+                loginButton.removeActionListener(_this);
                 final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
                 Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
                 infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
@@ -54,7 +54,7 @@ public class Login {
                             return loginService.doLogin(greeUser);
                         } catch (CannotGetJdbcConnectionException ee) {
                             ee.printStackTrace();
-                            JOptionPane.showMessageDialog(login, "获取数据源失败! ", "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(login, "获取数据源失败, 请联系管理员! ", "Error", JOptionPane.ERROR_MESSAGE);
                             infiniteProgressPanel.stop();
                             initDb();
                             System.exit(0);
@@ -64,6 +64,7 @@ public class Login {
 
                     @Override
                     protected void done() {
+                        loginButton.addActionListener(_this);
                         infiniteProgressPanel.stop();
                         GreeUser standardGreeUser = null;
                         try {
@@ -91,7 +92,8 @@ public class Login {
                 };
                 swingWorker.execute();
             }
-        });
+        };
+        loginButton.addActionListener(loginListener);
         textField1.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -133,6 +135,7 @@ public class Login {
                 jFrame.setContentPane(login);
                 jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 jFrame.setResizable(false);
+                jFrame.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
                 jFrame.pack();
                 int windowWidth = jFrame.getWidth();
                 int windowHeight = jFrame.getHeight();
@@ -165,47 +168,7 @@ public class Login {
     }
 
     private void initDb() {
-        String ip = JOptionPane.showInputDialog(login, "请输入数据源IP地址", "数据源配置", JOptionPane.WARNING_MESSAGE);
-        if (ip == null) {
-            return;
-        }
-        if (ip.matches("\\d+.\\d+.\\d+.\\d+")) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("db_ip", ip);
-            File file = new File(System.getProperty("user.dir") + File.separator + "db.json");
-            if (!file.exists()) {
-                try {
-                    if (!file.createNewFile()) {
-                        JOptionPane.showMessageDialog(login, "文件错误, 请手动设置!", "Error", JOptionPane.ERROR_MESSAGE);
-                        System.exit(0);
-                    }
-                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    fileOutputStream.write(jsonObject.toString().getBytes());
-                    fileOutputStream.close();
-                    JOptionPane.showMessageDialog(login, "修改成功下次启动生效!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    System.exit(0);
-                } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(login, "文件错误, 请手动设置! ", "Error", JOptionPane.ERROR_MESSAGE);
-                    e1.printStackTrace();
-                    System.exit(0);
-                }
-            } else {
-                try {
-                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    fileOutputStream.write(jsonObject.toString().getBytes());
-                    fileOutputStream.close();
-                    JOptionPane.showMessageDialog(login, "修改成功下次启动生效!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    System.exit(0);
-                } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(login, "文件错误, 请手动设置!", "Error", JOptionPane.ERROR_MESSAGE);
-                    e1.printStackTrace();
-                    System.exit(0);
-                }
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "地址不合法！ ", "Error", JOptionPane.ERROR_MESSAGE);
-            initDb();
-        }
+        Main.DataSourceSetting(login, dataSourceSetting);
     }
 
     {

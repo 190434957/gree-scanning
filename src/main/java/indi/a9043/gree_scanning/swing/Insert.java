@@ -108,6 +108,7 @@ public class Insert {
                     swingWorker.execute();
                 } else {
                     infiniteProgressPanel.stop();
+                    infiniteProgressPanel.setVisible(false);
                     JOptionPane.showMessageDialog(insertPanel, "文件无数据! ", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -176,9 +177,9 @@ public class Insert {
         insertPanel = new JPanel();
         insertPanel.setLayout(new GridLayoutManager(3, 4, new Insets(0, 0, 0, 0), -1, -1));
         insertPanel.setInheritsPopupMenu(true);
-        insertPanel.setMaximumSize(new Dimension(750, 610));
-        insertPanel.setMinimumSize(new Dimension(750, 610));
-        insertPanel.setPreferredSize(new Dimension(750, 610));
+        insertPanel.setMaximumSize(new Dimension(740, 610));
+        insertPanel.setMinimumSize(new Dimension(740, 610));
+        insertPanel.setPreferredSize(new Dimension(740, 610));
         final Spacer spacer1 = new Spacer();
         insertPanel.add(spacer1, new GridConstraints(1, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();

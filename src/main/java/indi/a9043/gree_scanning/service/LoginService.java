@@ -2,6 +2,7 @@ package indi.a9043.gree_scanning.service;
 
 import indi.a9043.gree_scanning.mapper.GreeUserMapper;
 import indi.a9043.gree_scanning.pojo.GreeUser;
+import indi.a9043.gree_scanning.pojo.GreeUserExample;
 import indi.a9043.gree_scanning.util.UserPasswordEncrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author a9043 卢学能 zzz13129180808@gmail.com
@@ -58,5 +60,32 @@ public class LoginService {
         standardGreeUser.setUsrName(null);
         standardGreeUser.setUsrPower(null);
         return greeUserMapper.updateByPrimaryKeySelective(standardGreeUser) > 0;
+    }
+
+    public List<GreeUser> getAllUser() {
+        GreeUserExample greeUserExample = new GreeUserExample();
+        List<GreeUser> greeUserList = greeUserMapper.selectByExample(greeUserExample);
+        for (GreeUser greeUser : greeUserList) {
+            greeUser.setUsrPwd(null);
+        }
+        return greeUserList;
+    }
+
+    public void updateUserList(List<GreeUser> greeUserList) {
+        for (GreeUser greeUser : greeUserList) {
+            if (greeUser.getUsrPwd().equals("")) {
+                greeUserMapper.deleteByPrimaryKey(greeUser.getUsrId());
+            } else {
+                greeUserMapper.updateByPrimaryKeySelective(greeUser);
+            }
+        }
+    }
+
+    public boolean addGreeUser(GreeUser greeUser) {
+        if (greeUserMapper.selectByPrimaryKey(greeUser.getUsrId()) != null) {
+            return false;
+        }
+        greeUser.setUsrPwd(userPasswordEncrypt.encrypt(greeUser.getUsrPwd()));
+        return greeUserMapper.insert(greeUser) > 0;
     }
 }

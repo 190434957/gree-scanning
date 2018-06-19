@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="indi.a9043.gree_scanning.swing.About">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="8" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="5" vgap="5">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="6" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="5" vgap="5">
     <margin top="15" left="15" bottom="15" right="15"/>
     <constraints>
       <xy x="20" y="20" width="500" height="400"/>
@@ -8,11 +8,6 @@
     <properties/>
     <border type="none"/>
     <children>
-      <vspacer id="bdc56">
-        <constraints>
-          <grid row="3" column="0" row-span="5" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-        </constraints>
-      </vspacer>
       <component id="d85a8" class="javax.swing.JLabel">
         <constraints>
           <grid row="4" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -21,28 +16,12 @@
           <text value="Vesion: 1.0_1"/>
         </properties>
       </component>
-      <component id="514a8" class="javax.swing.JLabel">
+      <component id="96526" class="javax.swing.JLabel">
         <constraints>
           <grid row="5" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Author: a9043"/>
-        </properties>
-      </component>
-      <component id="96526" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="6" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Email: 190434957@qq.com"/>
-        </properties>
-      </component>
-      <component id="e06ba" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="7" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Blog: https://lohoknang.blog/&#10;      https://blog.xsix103.cn/"/>
+          <text value="Power by a9043"/>
         </properties>
       </component>
       <grid id="7e119" binding="imgPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
@@ -77,6 +56,11 @@
           <text value="          "/>
         </properties>
       </component>
+      <vspacer id="bdc56">
+        <constraints>
+          <grid row="2" column="0" row-span="4" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+        </constraints>
+      </vspacer>
     </children>
   </grid>
 </form>

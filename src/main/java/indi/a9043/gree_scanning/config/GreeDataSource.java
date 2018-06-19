@@ -1,14 +1,18 @@
 package indi.a9043.gree_scanning.config;
 
+import indi.a9043.gree_scanning.swing.DataSourceSetting;
+import indi.a9043.gree_scanning.swing.Main;
+import indi.a9043.gree_scanning.util.AESUtil;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 
 /**
@@ -16,12 +20,22 @@ import java.io.*;
  */
 @Configuration
 public class GreeDataSource {
+    private DataSourceSetting dataSourceSetting;
+
+    @Autowired
+    public GreeDataSource(DataSourceSetting dataSourceSetting) {
+        this.dataSourceSetting = dataSourceSetting;
+    }
 
     @Bean
     @Primary
     public DataSource getGreeDataSource() {
-        File file = new File(System.getProperty("user.dir") + File.separator + "db.json");
-        initFile(file);
+        File file = new File(System.getProperty("user.dir") + File.separator + "db.set");
+        if (!file.exists()) {
+            JOptionPane.showMessageDialog(null, "数据源配置不存在, 请联系管理员配置", "Warn", JOptionPane.WARNING_MESSAGE);
+            initFile(file);
+            System.exit(0);
+        }
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
@@ -31,11 +45,24 @@ public class GreeDataSource {
             while ((line = bufferedReader.readLine()) != null) {
                 stringBuilder.append(line);
             }
-            JSONObject dbObj = new JSONObject(stringBuilder.toString());
+            JSONObject dbObj = null;
+            try {
+                String data = AESUtil.decrypt(stringBuilder.toString());
+                dbObj = new JSONObject(data);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "数据源配置损坏, 请联系管理员配置", "Warn", JOptionPane.WARNING_MESSAGE);
+                initFile(file);
+                e.printStackTrace();
+                System.exit(0);
+            }
             DataSourceProperties dataSourceProperties = new DataSourceProperties();
-            dataSourceProperties.setUrl(String.format("jdbc:sqlserver://%s:1433;DatabaseName=guangma", dbObj.getString("db_ip")));
-            dataSourceProperties.setUsername("sa");
-            dataSourceProperties.setPassword("980524");
+            dataSourceProperties.setUrl(
+                    String.format("jdbc:sqlserver://%s:%d;DatabaseName=%s",
+                            dbObj.getString("db_ip"),
+                            dbObj.getInt("db_port"),
+                            dbObj.getString("db_name")));
+            dataSourceProperties.setUsername(dbObj.getString("db_username"));
+            dataSourceProperties.setPassword(dbObj.getString("db_password"));
             dataSourceProperties.setDriverClassName(com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName());
             return dataSourceProperties.initializeDataSourceBuilder().build();
         } catch (IOException e) {
@@ -45,27 +72,19 @@ public class GreeDataSource {
     }
 
     private void initFile(File file) {
-        if (!file.exists()) {
-            String ip = JOptionPane.showInputDialog(null, "数据库配置不存在, 请输入数据源IP地址", "数据源配置", JOptionPane.WARNING_MESSAGE);
-            if (ip == null) {
-                System.exit(0);
-            }
-            if (ip.matches("\\d+.\\d+.\\d+.\\d+")) {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("db_ip", ip);
-                try {
-                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    fileOutputStream.write(jsonObject.toString().getBytes());
-                    fileOutputStream.close();
-                } catch (IOException e1) {
-                    JOptionPane.showMessageDialog(null, "文件错误, 请手动设置!", "Error", JOptionPane.ERROR_MESSAGE);
-                    e1.printStackTrace();
-                    System.exit(0);
-                }
-            } else {
-                JOptionPane.showMessageDialog(null, "地址不合法！ ", "Error", JOptionPane.ERROR_MESSAGE);
-                initFile(file);
-            }
-        }
+        final JFrame jFrame = new JFrame("配置");
+        final JPanel jPanel = new JPanel();
+        jFrame.setContentPane(jPanel);
+        jFrame.setResizable(false);
+        jFrame.pack();
+        int windowWidth = jFrame.getWidth();
+        int windowHeight = jFrame.getHeight();
+        Toolkit kit = Toolkit.getDefaultToolkit();
+        Dimension screenSize = kit.getScreenSize();
+        int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
+        jFrame.setLocation(screenWidth / 2 - windowWidth / 2, screenHeight / 2 - windowHeight / 2);
+        jFrame.setVisible(true);
+        Main.DataSourceSetting(jPanel, dataSourceSetting);
     }
 }

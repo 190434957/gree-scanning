@@ -7,9 +7,9 @@
     </constraints>
     <properties>
       <inheritsPopupMenu value="true"/>
-      <maximumSize width="750" height="610"/>
-      <minimumSize width="750" height="610"/>
-      <preferredSize width="750" height="610"/>
+      <maximumSize width="740" height="610"/>
+      <minimumSize width="740" height="610"/>
+      <preferredSize width="740" height="610"/>
     </properties>
     <border type="none"/>
     <children>

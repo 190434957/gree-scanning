@@ -51,9 +51,11 @@ public class View {
     private JSpinner eYear;
     private JSpinner eDay;
     private JSpinner eMonth;
+    private JCheckBox dismissCheckBox;
     private SearchData searchData;
     private GreeUser greeUser;
     private int pageNum = 1;
+    private boolean isDissmissDate = false;
 
     @Autowired
     public View(final DataService dataService) {
@@ -418,6 +420,7 @@ public class View {
                         @Override
                         protected void done() {
                             infiniteProgressPanel.stop();
+                            infiniteProgressPanel.setVisible(false);
                             View.this.selectData();
                             super.done();
                         }
@@ -547,6 +550,28 @@ public class View {
                 }
             }
         });
+        dismissCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (dismissCheckBox.isSelected()) {
+                    sYear.setEnabled(false);
+                    eYear.setEnabled(false);
+                    sMonth.setEnabled(false);
+                    eMonth.setEnabled(false);
+                    sDay.setEnabled(false);
+                    eDay.setEnabled(false);
+                    isDissmissDate = true;
+                } else {
+                    sYear.setEnabled(true);
+                    eYear.setEnabled(true);
+                    sMonth.setEnabled(true);
+                    eMonth.setEnabled(true);
+                    sDay.setEnabled(true);
+                    eDay.setEnabled(true);
+                    isDissmissDate = false;
+                }
+            }
+        });
     }
 
     JPanel getSuccess(GreeUser greeUser) {
@@ -590,8 +615,8 @@ public class View {
                 protected List<Comm> doInBackground() throws Exception {
                     return dataService.selectComm(searchData.getVoucher(),
                             searchData.getBarcode(),
-                            startDate,
-                            endDate,
+                            isDissmissDate ? null : startDate,
+                            isDissmissDate ? null : endDate,
                             (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
                             pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
                 }
@@ -637,6 +662,7 @@ public class View {
             swingWorker.execute();
         } catch (IllegalArgumentException e) {
             infiniteProgressPanel.stop();
+            infiniteProgressPanel.setVisible(false);
             JOptionPane.showMessageDialog(viewPanel, "搜索条件非法", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -747,21 +773,19 @@ public class View {
      */
     private void $$$setupUI$$$() {
         viewPanel = new JPanel();
-        viewPanel.setLayout(new GridLayoutManager(20, 6, new Insets(0, 0, 0, 0), -1, -1));
-        viewPanel.setMaximumSize(new Dimension(750, 610));
-        viewPanel.setMinimumSize(new Dimension(750, 610));
-        viewPanel.setPreferredSize(new Dimension(750, 610));
+        viewPanel.setLayout(new GridLayoutManager(21, 5, new Insets(0, 0, 0, 0), -1, -1));
+        viewPanel.setMaximumSize(new Dimension(740, 610));
+        viewPanel.setMinimumSize(new Dimension(740, 610));
+        viewPanel.setPreferredSize(new Dimension(740, 610));
         voucher = new JTextField();
         viewPanel.add(voucher, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(250, 35), new Dimension(250, 35), new Dimension(250, 35), 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
-        viewPanel.add(scrollPane1, new GridConstraints(2, 0, 17, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        viewPanel.add(scrollPane1, new GridConstraints(3, 0, 17, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         table1 = new JTable();
         scrollPane1.setViewportView(table1);
-        final Spacer spacer1 = new Spacer();
-        viewPanel.add(spacer1, new GridConstraints(0, 4, 2, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         selectButton = new JButton();
         selectButton.setText("搜索");
-        viewPanel.add(selectButton, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
+        viewPanel.add(selectButton, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("单据号");
         viewPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -770,10 +794,10 @@ public class View {
         viewPanel.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         deleteButton = new JButton();
         deleteButton.setText("删除");
-        viewPanel.add(deleteButton, new GridConstraints(1, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
+        viewPanel.add(deleteButton, new GridConstraints(1, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, new Dimension(70, 35), new Dimension(70, 35), new Dimension(70, 35), 0, false));
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new GridLayoutManager(1, 14, new Insets(0, 0, 0, 0), -1, -1));
-        viewPanel.add(panel1, new GridConstraints(19, 0, 1, 6, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        viewPanel.add(panel1, new GridConstraints(20, 0, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         lastPage = new JButton();
         lastPage.setText("尾页");
         panel1.add(lastPage, new GridConstraints(0, 10, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -795,8 +819,8 @@ public class View {
         firstPage = new JButton();
         firstPage.setText("首页");
         panel1.add(firstPage, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer2 = new Spacer();
-        panel1.add(spacer2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        panel1.add(spacer1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final JLabel label5 = new JLabel();
         label5.setText("每页");
         panel1.add(label5, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -857,6 +881,9 @@ public class View {
         final JLabel label15 = new JLabel();
         label15.setText("到");
         viewPanel.add(label15, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        dismissCheckBox = new JCheckBox();
+        dismissCheckBox.setText("忽略日期");
+        viewPanel.add(dismissCheckBox, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
