@@ -69,10 +69,9 @@ public class GreeScanningApplication {
     public static void main(String[] args) {
         System.setProperty("java.awt.headless", "false");
         try {
-            for (int i = 0; i < DEFAULT_FONT.length; i++)
-                UIManager.put(DEFAULT_FONT[i], new Font("黑体", Font.PLAIN, 16));
+            for (String aDEFAULT_FONT : DEFAULT_FONT) UIManager.put(aDEFAULT_FONT, new Font("黑体", Font.PLAIN, 16));
             UIManager.put("RootPane.setupButtonVisible", false);
-            BeautyEyeLNFHelper.frameBorderStyle = BeautyEyeLNFHelper.FrameBorderStyle.translucencySmallShadow;
+            BeautyEyeLNFHelper.frameBorderStyle = BeautyEyeLNFHelper.FrameBorderStyle.osLookAndFeelDecorated;
             org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
         } catch (Exception e) {
             e.printStackTrace();

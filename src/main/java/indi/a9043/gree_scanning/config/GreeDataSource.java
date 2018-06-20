@@ -1,11 +1,12 @@
 package indi.a9043.gree_scanning.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import indi.a9043.gree_scanning.swing.DataSourceSetting;
 import indi.a9043.gree_scanning.swing.Main;
 import indi.a9043.gree_scanning.util.AESUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -13,7 +14,10 @@ import org.springframework.context.annotation.Primary;
 import javax.sql.DataSource;
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 
 /**
  * @author a9043 卢学能 zzz13129180808@gmail.com
@@ -55,17 +59,28 @@ public class GreeDataSource {
                 e.printStackTrace();
                 System.exit(0);
             }
-            DataSourceProperties dataSourceProperties = new DataSourceProperties();
-            dataSourceProperties.setUrl(
-                    String.format("jdbc:sqlserver://%s:%d;DatabaseName=%s",
-                            dbObj.getString("db_ip"),
-                            dbObj.getInt("db_port"),
-                            dbObj.getString("db_name")));
-            dataSourceProperties.setUsername(dbObj.getString("db_username"));
-            dataSourceProperties.setPassword(dbObj.getString("db_password"));
-            dataSourceProperties.setDriverClassName(com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName());
-            return dataSourceProperties.initializeDataSourceBuilder().build();
-        } catch (IOException e) {
+            String url = String.format("jdbc:sqlserver://%s:%d;DatabaseName=%s",
+                    dbObj.getString("db_ip"),
+                    dbObj.getInt("db_port"),
+                    dbObj.getString("db_name"));
+            HikariConfig hikariConfig = new HikariConfig();
+            hikariConfig.setJdbcUrl(url);
+            hikariConfig.setUsername(dbObj.getString("db_username"));
+            hikariConfig.setPassword(dbObj.getString("db_password"));
+            hikariConfig.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            hikariConfig.setConnectionTimeout(5000);
+            return new HikariDataSource(hikariConfig);
+        } catch (Exception e) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("连接数据源失败, 请联系管理员配置\n");
+            if (e.getMessage().length() >= 100) {
+                stringBuilder.append(e.getMessage(), 0, 100).append("...         ");
+            } else {
+                stringBuilder.append(e.getMessage()).append("         ");
+            }
+            JOptionPane.showMessageDialog(null, stringBuilder.toString(), "Warn", JOptionPane.WARNING_MESSAGE);
+            initFile(file);
+            System.exit(0);
             e.printStackTrace();
         }
         return null;

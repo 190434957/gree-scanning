@@ -96,12 +96,17 @@ public class Insert {
                             JOptionPane.showMessageDialog(insertPanel,
                                     "总" +
                                             commList.size() +
-                                            "条\n重复" +
-                                            res[0] +
-                                            "条\n成功插入" +
+                                            "条\n" +
+                                            "成功插入" +
                                             res[1]
                                             + "条! ",
                                     "Success", JOptionPane.INFORMATION_MESSAGE);
+                            file = null;
+                            textField.setText("");
+                            rows = new Object[0][4];
+                            GreeTableModel greeTableModel = new GreeTableModel(rows, Integer.valueOf(1).byteValue());
+                            table1.setModel(greeTableModel);
+                            table1.updateUI();
                             super.done();
                         }
                     };

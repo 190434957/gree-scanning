@@ -8,10 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author a9043 卢学能 zzz13129180808@gmail.com
@@ -38,7 +35,11 @@ public class DataService {
         }
 
         if (endDate != null) {
-            criteria.andDateTimeLessThanOrEqualTo(endDate);
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(endDate);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            endDate.setTime(calendar.getTime().getTime());
+            criteria.andDateTimeLessThan(endDate);
         }
 
         commExample.setStart(start);
@@ -54,27 +55,6 @@ public class DataService {
 
     @Transactional
     public int[] addNewData(List<Comm> commList) {
-/*        List<Map> tempMapList = commMapper.selectCommList(commList);
-        List<String> voucherList = new ArrayList<String>();
-
-        for (Map map : tempMapList) {
-            if (map.get("VOUCHER") != null) {
-                voucherList.add(map.get("VOUCHER").toString());
-                continue;
-            }
-            if (map.get("voucher") != null) {
-                voucherList.add(map.get("voucher").toString());
-            }
-        }
-
-        Iterator<Comm> it = commList.iterator();
-        while (it.hasNext()) {
-            Comm x = it.next();
-            if (voucherList.contains(x.getVoucher())) {
-                it.remove();
-            }
-        }*/
-
         int count = 0;
         for (Comm comm : commList) {
             count += commMapper.insert(comm);
@@ -88,13 +68,13 @@ public class DataService {
     }
 
     @Transactional
-    public List<String> deleteComm(List<String> voucherList) {
+    public List<String> deleteComm(List<Map<String, String>> mapList) {
         List<String> stringList = new ArrayList<String>();
         CommExample commExample = new CommExample();
-        for (String voucher : voucherList) {
-            commExample.createCriteria().andVoucherEqualTo(voucher);
+        for (Map<String, String> map : mapList) {
+            commExample.createCriteria().andVoucherEqualTo(map.get("voucher")).andBarcodeEqualTo(map.get("barcode"));
             if (commMapper.deleteByExample(commExample) <= 0) {
-                stringList.add(voucher);
+                stringList.add(map.get("voucher") + ", " + map.get("barcode"));
             }
             commExample.clear();
         }

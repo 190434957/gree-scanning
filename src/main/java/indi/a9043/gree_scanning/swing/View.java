@@ -391,16 +391,19 @@ public class View {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int rowCount = table1.getModel().getRowCount();
-                final List<String> voucherList = new ArrayList<String>();
+                final List<Map<String, String>> mapList = new ArrayList<>();
                 for (int i = 0; i < rowCount; i++) {
                     if (table1.getModel().getValueAt(i, 4).equals(Boolean.TRUE)) {
-                        voucherList.add(table1.getModel().getValueAt(i, 1).toString());
+                        Map<String, String> map = new HashMap<>();
+                        map.put("voucher", table1.getModel().getValueAt(i, 1).toString());
+                        map.put("barcode", table1.getModel().getValueAt(i, 2).toString());
+                        mapList.add(map);
                     }
                 }
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("以下单据\n");
-                for (String aVoucherList : voucherList) {
-                    stringBuilder.append(aVoucherList).append("\n");
+                for (Map map : mapList) {
+                    stringBuilder.append(map.get("voucher")).append(" ").append(map.get("barcode")).append("\n");
                 }
                 stringBuilder.append("确定删除？");
                 if (JOptionPane.showConfirmDialog(viewPanel, stringBuilder.toString()) == JOptionPane.YES_OPTION) {
@@ -414,7 +417,7 @@ public class View {
                     SwingWorker swingWorker = new SwingWorker() {
                         @Override
                         protected Object doInBackground() throws Exception {
-                            return dataService.deleteComm(voucherList);
+                            return dataService.deleteComm(mapList);
                         }
 
                         @Override
@@ -575,12 +578,8 @@ public class View {
     }
 
     JPanel getSuccess(GreeUser greeUser) {
-        register();
         this.greeUser = greeUser;
-        if ((greeUser.getUsrPower() & 4) != 4) {
-            deleteButton.setVisible(false);
-        }
-        selectData();
+        register();
         return viewPanel;
     }
 
@@ -606,10 +605,16 @@ public class View {
                     eMonth.getModel().getValue(),
                     eDay.getModel().getValue()));
 
-            long pageCount = dataService.getPageCount(Integer.valueOf(pageSize.getModel().getSelectedItem().toString()), searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
-            pageCountNum.setText(String.valueOf(pageCount));
-            ((SpinnerNumberModel) pageNumSpinner.getModel()).setMinimum(1);
-            ((SpinnerNumberModel) pageNumSpinner.getModel()).setMaximum(Integer.valueOf(pageCountNum.getText()));
+            new SwingWorker() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    long pageCount = dataService.getPageCount(Integer.valueOf(pageSize.getModel().getSelectedItem().toString()), searchData.getVoucher(), searchData.getBarcode(), startDate, endDate);
+                    pageCountNum.setText(String.valueOf(pageCount));
+                    ((SpinnerNumberModel) pageNumSpinner.getModel()).setMinimum(1);
+                    ((SpinnerNumberModel) pageNumSpinner.getModel()).setMaximum(Integer.valueOf(pageCountNum.getText()));
+                    return null;
+                }
+            }.execute();
             SwingWorker<List<Comm>, Object> swingWorker = new SwingWorker<List<Comm>, Object>() {
                 @Override
                 protected List<Comm> doInBackground() throws Exception {
@@ -713,36 +718,46 @@ public class View {
 
         getData(searchData);
 
-        java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+        final java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
                 sYear.getModel().getValue(),
                 sMonth.getModel().getValue(),
                 sDay.getModel().getValue()));
-        java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+        final java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
                 eYear.getModel().getValue(),
                 eMonth.getModel().getValue(),
                 eDay.getModel().getValue()));
 
-        long pageCount = dataService.getPageCount(
-                Integer.valueOf(pageSize.getModel().getSelectedItem().toString()),
-                searchData.getVoucher(),
-                searchData.getBarcode(),
-                startDate,
-                endDate);
-        pageCountNum.setText(String.valueOf(pageCount));
-
-        //register pageNumSpinner
-        final SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel();
-        spinnerNumberModel.setMinimum(1);
-        spinnerNumberModel.setValue(1);
-        spinnerNumberModel.setMaximum(Integer.valueOf(pageCountNum.getText()));
-        spinnerNumberModel.setStepSize(1);
-        spinnerNumberModel.addChangeListener(new ChangeListener() {
+        new SwingWorker() {
             @Override
-            public void stateChanged(ChangeEvent e) {
-                pageNum = Integer.valueOf(spinnerNumberModel.getValue().toString());
+            protected Void doInBackground() throws Exception {
+                long pageCount = dataService.getPageCount(
+                        Integer.valueOf(pageSize.getModel().getSelectedItem().toString()),
+                        searchData.getVoucher(),
+                        searchData.getBarcode(),
+                        startDate,
+                        endDate);
+                pageCountNum.setText(String.valueOf(pageCount));
+
+                //register pageNumSpinner
+                final SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel();
+                spinnerNumberModel.setMinimum(1);
+                spinnerNumberModel.setValue(1);
+                spinnerNumberModel.setMaximum(Integer.valueOf(pageCountNum.getText()));
+                spinnerNumberModel.setStepSize(1);
+                spinnerNumberModel.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        pageNum = Integer.valueOf(spinnerNumberModel.getValue().toString());
+                    }
+                });
+                pageNumSpinner.setModel(spinnerNumberModel);
+                if ((greeUser.getUsrPower() & 4) != 4) {
+                    deleteButton.setVisible(false);
+                }
+                selectData();
+                return null;
             }
-        });
-        pageNumSpinner.setModel(spinnerNumberModel);
+        }.execute();
     }
 
 
