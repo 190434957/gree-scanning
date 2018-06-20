@@ -73,7 +73,7 @@ public class LoginService {
 
     public void updateUserList(List<GreeUser> greeUserList) {
         for (GreeUser greeUser : greeUserList) {
-            if (greeUser.getUsrPwd().equals("")) {
+            if (greeUser.getUsrPwd() != null && greeUser.getUsrPwd().equals("")) {
                 greeUserMapper.deleteByPrimaryKey(greeUser.getUsrId());
             } else {
                 greeUserMapper.updateByPrimaryKeySelective(greeUser);

@@ -658,6 +658,11 @@ public class View {
                         }
                         GreeTableModel tableModel = new GreeTableModel(rows, greeUser.getUsrPower());
                         table1.setModel(tableModel);
+                        if ((greeUser.getUsrPower() & 4) == 4) {
+                            table1.getColumnModel().getColumn(0).setPreferredWidth(10);
+                            table1.getColumnModel().getColumn(1).setPreferredWidth(50);
+                            table1.getColumnModel().getColumn(3).setPreferredWidth(110);
+                        }
                         table1.updateUI();
                     } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();

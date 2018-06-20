@@ -98,13 +98,10 @@
         select * from (
             select
             <include refid="Base_Column_List"/>
-            , ROW_NUMBER() OVER(Order by Voucher ) AS RowId
+            , ROW_NUMBER() OVER(Order by Voucher DESC ) AS RowId
                 from Comm
             <if test="_parameter != null">
                 <include refid="Example_Where_Clause"/>
-            </if>
-            <if test="orderByClause != null">
-                order by ${orderByClause}
             </if>
         ) as b
         where RowId between #{start} and #{end}
