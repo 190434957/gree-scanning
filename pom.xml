@@ -5,7 +5,7 @@
 
     <groupId>indi.a9043</groupId>
     <artifactId>gree-scanning</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0_RELEASE</version>
     <packaging>jar</packaging>
 
     <name>gree-scanning</name>
