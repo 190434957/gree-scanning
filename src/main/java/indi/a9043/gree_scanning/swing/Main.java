@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 
 /**
  * @author a9043 卢学能 zzz13129180808@gmail.com
@@ -29,16 +28,18 @@ public class Main {
     private About about;
     private UserManager userManager;
     private DataSourceSetting dataSourceSetting;
+    private GreeTrayIcon greeTrayIcon;
 
 
     @Autowired
-    public Main(View view, Insert insert, Setting setting, About about, UserManager userManager, DataSourceSetting dataSourceSetting) {
+    public Main(View view, Insert insert, Setting setting, About about, UserManager userManager, DataSourceSetting dataSourceSetting, GreeTrayIcon greeTrayIcon) {
         this.view = view;
         this.insert = insert;
         this.setting = setting;
         this.about = about;
         this.userManager = userManager;
         this.dataSourceSetting = dataSourceSetting;
+        this.greeTrayIcon = greeTrayIcon;
         $$$setupUI$$$();
         viewButton.addActionListener(new ActionListener() {
             @Override
@@ -67,6 +68,14 @@ public class Main {
             @Override
             public void run() {
                 final JFrame frame = new JFrame("单据管理 用户: " + greeUser.getUsrName());
+                greeTrayIcon.setMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            frame.setVisible(true);
+                        }
+                    }
+                });
                 if ((greeUser.getUsrPower() & 1) == 1 || (greeUser.getUsrPower() & 4) == 4) {
                     showView();
                 } else if ((greeUser.getUsrPower() & 2) == 2) {
@@ -105,8 +114,10 @@ public class Main {
                 jMenuItem3.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        frame.dispose();
-                        System.exit(0);
+                        if (JOptionPane.showConfirmDialog(mainPanel, "确定退出? ", "退出", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.YES_OPTION) {
+                            frame.dispose();
+                            System.exit(0);
+                        }
                     }
                 });
                 JMenuItem jMenuItem4 = new JMenuItem("关于");
@@ -139,8 +150,17 @@ public class Main {
                 frame.setJMenuBar(jMenuBar);
                 frame.setResizable(false);
                 frame.setContentPane(mainPanel);
-                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
                 frame.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
+                frame.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent e) {
+                        if (JOptionPane.showConfirmDialog(mainPanel, "确定退出? ", "Exit", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                            frame.dispose();
+                            System.exit(0);
+                        }
+                    }
+                });
                 frame.pack();
                 int windowWidth = frame.getWidth();
                 int windowHeight = frame.getHeight();

@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -28,10 +25,12 @@ public class Login {
     private JPasswordField passwordField1;
     private JButton loginButton;
     private DataSourceSetting dataSourceSetting;
+    private GreeTrayIcon greeTrayIcon;
 
     @Autowired
-    public Login(final LoginService loginService, final Main main, DataSourceSetting dataSourceSetting) {
+    public Login(final LoginService loginService, final Main main, DataSourceSetting dataSourceSetting, GreeTrayIcon greeTrayIcon1) {
         this.dataSourceSetting = dataSourceSetting;
+        this.greeTrayIcon = greeTrayIcon1;
         loginButton.setUI(new BEButtonUI().setNormalColor(BEButtonUI.NormalColor.green));
         final ActionListener loginListener = new ActionListener() {
             @Override
@@ -132,6 +131,14 @@ public class Login {
             @Override
             public void run() {
                 jFrame = new JFrame("登录");
+                greeTrayIcon.setMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            jFrame.setVisible(true);
+                        }
+                    }
+                });
                 jFrame.setContentPane(login);
                 jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 jFrame.setResizable(false);

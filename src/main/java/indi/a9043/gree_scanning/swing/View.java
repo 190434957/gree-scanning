@@ -381,6 +381,7 @@ public class View {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if ((greeUser.getUsrPower() & 1) == 1 || (greeUser.getUsrPower() & 4) == 4) {
+                    pageNumSpinner.getModel().setValue(1);
                     View.this.selectData();
                 } else {
                     JOptionPane.showMessageDialog(viewPanel, "你没有查询权限! ", "Error", JOptionPane.ERROR_MESSAGE);
