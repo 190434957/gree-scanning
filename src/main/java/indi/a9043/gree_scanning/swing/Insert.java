@@ -34,8 +34,8 @@ import java.util.regex.Pattern;
  */
 @Component
 public class Insert {
-    private final String newPat = "${voucher},${barcode},${datetime}";
-    private final String oldPat = "${barcode};${voucher};${date}";
+    private final String newPat = "No.1 (单号,条形码,日期时间)";
+    private final String oldPat = "No.2 (条形码;单号;日期)";
     private JPanel insertPanel;
     private JTable table1;
     private JPanel fileText;
