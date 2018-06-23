@@ -23,7 +23,7 @@ public class DataService {
         CommExample.Criteria criteria = commExample.createCriteria();
 
         if (voucher != null && !voucher.equals("")) {
-            criteria.andVoucherEqualTo(voucher);
+            criteria.andVoucherLike("%" + voucher + "%");
         }
 
         if (barcode != null && !barcode.equals("")) {
