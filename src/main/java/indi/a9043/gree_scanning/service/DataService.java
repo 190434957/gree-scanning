@@ -3,10 +3,22 @@ package indi.a9043.gree_scanning.service;
 import indi.a9043.gree_scanning.mapper.CommMapper;
 import indi.a9043.gree_scanning.pojo.Comm;
 import indi.a9043.gree_scanning.pojo.CommExample;
+import org.apache.poi.hssf.model.WorkbookRecordList;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.WorkbookUtil;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Date;
 import java.util.*;
 
@@ -18,7 +30,7 @@ public class DataService {
     @Resource
     private CommMapper commMapper;
 
-    public List<Comm> selectComm(String voucher, String barcode, Date startDate, Date endDate, long start, long end) {
+    public List<Comm> selectComm(String voucher, String barcode, Date startDate, Date endDate, Long start, Long end) {
         CommExample commExample = new CommExample();
         CommExample.Criteria criteria = commExample.createCriteria();
 
@@ -102,5 +114,35 @@ public class DataService {
         }
         long count = commMapper.countByExample(commExample);
         return (count - 1) / pageSize + 1;
+    }
+
+    public void exportData(File file, List<Comm> commList) throws IOException {
+        if (file == null || file.isDirectory()) {
+            return;
+        }
+        if (!file.getName().endsWith(".xlsx")) {
+            file = new File(file.getAbsolutePath() + ".xlsx");
+        }
+        String[] rowNames = {"单号", "条形码", "日期"};
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet();
+        Row rowHeader = sheet.createRow(0);
+        for (int i = 0; i < 3; i++) {
+            Cell cell = rowHeader.createCell(i);
+            cell.setCellValue(rowNames[i]);
+        }
+        for (int i = 0; i < commList.size(); i++) {
+            Comm comm = commList.get(i);
+            Row row = sheet.createRow(i + 1);
+            Cell cell1 = row.createCell(0);
+            Cell cell2 = row.createCell(1);
+            Cell cell3 = row.createCell(2);
+            cell1.setCellValue(comm.getVoucher());
+            cell2.setCellValue(comm.getBarcode());
+            cell3.setCellValue(comm.getDateTime());
+        }
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        workbook.write(fileOutputStream);
+        workbook.close();
     }
 }

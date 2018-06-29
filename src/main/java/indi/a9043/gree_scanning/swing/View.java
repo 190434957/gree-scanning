@@ -20,6 +20,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -52,10 +54,12 @@ public class View {
     private JSpinner eDay;
     private JSpinner eMonth;
     private JCheckBox dismissCheckBox;
+    private JButton expOnebutton;
+    private JButton expAllButton;
     private SearchData searchData;
     private GreeUser greeUser;
     private int pageNum = 1;
-    private boolean isDissmissDate = false;
+    private boolean isDismissDate = false;
 
     @Autowired
     public View(final DataService dataService) {
@@ -564,7 +568,7 @@ public class View {
                     eMonth.setEnabled(false);
                     sDay.setEnabled(false);
                     eDay.setEnabled(false);
-                    isDissmissDate = true;
+                    isDismissDate = true;
                 } else {
                     sYear.setEnabled(true);
                     eYear.setEnabled(true);
@@ -572,7 +576,47 @@ public class View {
                     eMonth.setEnabled(true);
                     sDay.setEnabled(true);
                     eDay.setEnabled(true);
-                    isDissmissDate = false;
+                    isDismissDate = false;
+                }
+            }
+        });
+        expOnebutton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jFileChooser = new JFileChooser();
+                jFileChooser.showSaveDialog(viewPanel);
+                File file;
+                file = jFileChooser.getSelectedFile();
+                if (file == null) {
+                    return;
+                }
+                if (file.exists() || new File(file.getAbsolutePath() + ".xlsx").exists()) {
+                    if (JOptionPane.showConfirmDialog(viewPanel, "文件已存在，确认覆盖？ ", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+                        exportOneData(file);
+                    }
+                } else {
+                    exportOneData(file);
+                }
+            }
+        });
+        expAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (JOptionPane.showConfirmDialog(viewPanel, "该操作容易使程序等待过长，请谨慎使用! ", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+                    JFileChooser jFileChooser = new JFileChooser();
+                    jFileChooser.showSaveDialog(viewPanel);
+                    File file;
+                    file = jFileChooser.getSelectedFile();
+                    if (file == null) {
+                        return;
+                    }
+                    if (file.exists() || new File(file.getAbsolutePath() + ".xlsx").exists()) {
+                        if (JOptionPane.showConfirmDialog(viewPanel, "文件已存在，确认覆盖？ ", "Warning", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+                            exportAllData(file);
+                        }
+                    } else {
+                        exportAllData(file);
+                    }
                 }
             }
         });
@@ -582,6 +626,114 @@ public class View {
         this.greeUser = greeUser;
         register();
         return viewPanel;
+    }
+
+    private void exportAllData(final File file) {
+        final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
+        if (viewPanel.getRootPane() != null) {
+            viewPanel.getRootPane().setGlassPane(infiniteProgressPanel);
+            viewPanel.getRootPane().validate();
+            viewPanel.getRootPane().setVisible(true);
+            infiniteProgressPanel.start();
+        }
+        getData(searchData);
+
+        try {
+            final java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                    sYear.getModel().getValue(),
+                    sMonth.getModel().getValue(),
+                    sDay.getModel().getValue()));
+            final java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                    eYear.getModel().getValue(),
+                    eMonth.getModel().getValue(),
+                    eDay.getModel().getValue()));
+
+            SwingWorker<List<Comm>, Object> swingWorker = new SwingWorker<List<Comm>, Object>() {
+                @Override
+                protected List<Comm> doInBackground() throws Exception {
+                    return dataService.selectComm(searchData.getVoucher(),
+                            searchData.getBarcode(),
+                            isDismissDate ? null : startDate,
+                            isDismissDate ? null : endDate,
+                            null,
+                            null);
+                }
+
+                @Override
+                protected void done() {
+                    infiniteProgressPanel.stop();
+                    List<Comm> commList;
+                    try {
+                        commList = get();
+                        dataService.exportData(file, commList);
+                        JOptionPane.showMessageDialog(viewPanel, "导出完成! ");
+                    } catch (InterruptedException | ExecutionException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            swingWorker.execute();
+        } catch (IllegalArgumentException e) {
+            infiniteProgressPanel.stop();
+            infiniteProgressPanel.setVisible(false);
+            JOptionPane.showMessageDialog(viewPanel, "搜索条件非法", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void exportOneData(final File file) {
+        final InfiniteProgressPanel infiniteProgressPanel = new InfiniteProgressPanel();
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        infiniteProgressPanel.setBounds(100, 100, (dimension.width) / 2, (dimension.height) / 2);
+        if (viewPanel.getRootPane() != null) {
+            viewPanel.getRootPane().setGlassPane(infiniteProgressPanel);
+            viewPanel.getRootPane().validate();
+            viewPanel.getRootPane().setVisible(true);
+            infiniteProgressPanel.start();
+        }
+        getData(searchData);
+
+        try {
+            final java.sql.Date startDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                    sYear.getModel().getValue(),
+                    sMonth.getModel().getValue(),
+                    sDay.getModel().getValue()));
+            final java.sql.Date endDate = java.sql.Date.valueOf(String.format("%s-%s-%s",
+                    eYear.getModel().getValue(),
+                    eMonth.getModel().getValue(),
+                    eDay.getModel().getValue()));
+
+            SwingWorker<List<Comm>, Object> swingWorker = new SwingWorker<List<Comm>, Object>() {
+                @Override
+                protected List<Comm> doInBackground() throws Exception {
+                    return dataService.selectComm(searchData.getVoucher(),
+                            searchData.getBarcode(),
+                            isDismissDate ? null : startDate,
+                            isDismissDate ? null : endDate,
+                            (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
+                            pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
+                }
+
+                @Override
+                protected void done() {
+                    infiniteProgressPanel.stop();
+                    List<Comm> commList;
+                    try {
+                        commList = get();
+                        dataService.exportData(file, commList);
+                        JOptionPane.showMessageDialog(viewPanel, "导出完成! ");
+                    } catch (InterruptedException | ExecutionException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            swingWorker.execute();
+        } catch (IllegalArgumentException e) {
+            infiniteProgressPanel.stop();
+            infiniteProgressPanel.setVisible(false);
+            JOptionPane.showMessageDialog(viewPanel, "搜索条件非法", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void selectData() {
@@ -621,8 +773,8 @@ public class View {
                 protected List<Comm> doInBackground() throws Exception {
                     return dataService.selectComm(searchData.getVoucher(),
                             searchData.getBarcode(),
-                            isDissmissDate ? null : startDate,
-                            isDissmissDate ? null : endDate,
+                            isDismissDate ? null : startDate,
+                            isDismissDate ? null : endDate,
                             (pageNum - 1) * Long.valueOf(pageSize.getModel().getSelectedItem().toString()) + 1,
                             pageNum * Long.valueOf(pageSize.getModel().getSelectedItem().toString()));
                 }
@@ -902,9 +1054,20 @@ public class View {
         final JLabel label15 = new JLabel();
         label15.setText("到");
         viewPanel.add(label15, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JPanel panel4 = new JPanel();
+        panel4.setLayout(new GridLayoutManager(1, 4, new Insets(0, 0, 0, 0), -1, -1));
+        viewPanel.add(panel4, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        expOnebutton = new JButton();
+        expOnebutton.setText("导出单页");
+        panel4.add(expOnebutton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        expAllButton = new JButton();
+        expAllButton.setText("导出全部");
+        panel4.add(expAllButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer2 = new Spacer();
+        panel4.add(spacer2, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         dismissCheckBox = new JCheckBox();
         dismissCheckBox.setText("忽略日期");
-        viewPanel.add(dismissCheckBox, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel4.add(dismissCheckBox, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**

@@ -29,24 +29,24 @@ public class CommExample {
      */
     protected List<Criteria> oredCriteria;
 
-    protected long start;
+    protected Long start;
 
-    protected long end;
+    protected Long end;
 
-    public long getStart() {
+    public Long getStart() {
         return start;
     }
 
-    public CommExample setStart(long start) {
+    public CommExample setStart(Long start) {
         this.start = start;
         return this;
     }
 
-    public long getEnd() {
+    public Long getEnd() {
         return end;
     }
 
-    public CommExample setEnd(long end) {
+    public CommExample setEnd(Long end) {
         this.end = end;
         return this;
     }
