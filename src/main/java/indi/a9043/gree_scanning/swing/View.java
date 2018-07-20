@@ -794,7 +794,7 @@ public class View {
                                 rows[idx][0] = String.valueOf(idx + 1);
                                 rows[idx][1] = comm.getVoucher();
                                 rows[idx][2] = comm.getBarcode();
-                                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
+                                rows[idx][3] = comm.getDateTime() == null ? null : simpleDateFormat.format(comm.getDateTime());
                                 rows[idx][4] = Boolean.FALSE;
                                 idx++;
                             }
@@ -805,7 +805,7 @@ public class View {
                                 rows[idx][0] = String.valueOf(idx + 1);
                                 rows[idx][1] = comm.getVoucher();
                                 rows[idx][2] = comm.getBarcode();
-                                rows[idx][3] = simpleDateFormat.format(comm.getDateTime());
+                                rows[idx][3] = comm.getDateTime() == null ? null : simpleDateFormat.format(comm.getDateTime());
                                 idx++;
                             }
                         }
