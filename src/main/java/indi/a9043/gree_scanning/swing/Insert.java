@@ -162,7 +162,18 @@ public class Insert {
                 insertPanel.getRootPane().setVisible(true);
                 infiniteProgressPanel.start();
                 if (rows != null && rows.length > 0) {
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    String patStr = Objects.requireNonNull(typeBox.getSelectedItem()).toString();
+                    SimpleDateFormat simpleDateFormat;
+                    switch (patStr) {
+                        case newPat:
+                            simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                            break;
+                        case oldPat:
+                            simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                            break;
+                        default:
+                            return;
+                    }
                     final List<Comm> commList = new ArrayList<Comm>();
                     for (Object[] row : rows) {
                         Comm comm = new Comm();
