@@ -1,5 +1,5 @@
 # gree-scanning
 
-绵阳市格力电器股份有限公司 
+my市gxxe电器xx有限公司
 
 仓管条形管理器
