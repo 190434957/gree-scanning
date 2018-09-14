@@ -1,4 +1,4 @@
-# gree-scanning
+# gxxx-scanning
 
 my市某电器xx有限公司
 
